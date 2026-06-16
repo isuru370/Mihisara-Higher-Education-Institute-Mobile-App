@@ -1,4 +1,4 @@
-package com.nexorait.minipalasa_education_app;
+package com.nexorait.mihisara_education_app;
 
 import io.flutter.embedding.android.FlutterActivity;
 

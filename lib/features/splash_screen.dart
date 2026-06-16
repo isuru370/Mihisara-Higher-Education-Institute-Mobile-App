@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen>
                   const SizedBox(height: 2),
 
                   const Text(
-                    "MINIPALASA HIGHER EDUCATION INSTITUTE",
+                    "MIHISARA HIGHER EDUCATION INSTITUTE",
                     style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
