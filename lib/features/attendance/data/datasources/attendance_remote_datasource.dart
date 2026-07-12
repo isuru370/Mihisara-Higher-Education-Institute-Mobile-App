@@ -8,6 +8,8 @@ import '../../../../core/storage/session_storage.dart';
 import '../models/atendance_request_model.dart';
 import '../models/attendance_history/attendance_history_request_model.dart';
 import '../models/attendance_history/attendance_history_response_model.dart';
+import '../models/attendance_report/attendance_report_request_model.dart';
+import '../models/attendance_report/attendance_report_response_model.dart';
 import '../models/attendance_response_model.dart';
 
 class AttendanceRemoteDataSource {
@@ -79,6 +81,45 @@ class AttendanceRemoteDataSource {
       final message = decoded is Map<String, dynamic>
           ? decoded['message']?.toString()
           : 'Failed to fetch attendance history.';
+
+      throw Exception(message);
+    } on FormatException {
+      throw Exception('Invalid server response format');
+    } on http.ClientException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<AttendanceReportResponseModel> getAttendanceReport({
+    required AttendanceReportRequestModel request,
+  }) async {
+    try {
+      final token = await SessionStorage.getToken();
+
+      final response = await http.post(
+        Uri.parse('${ApiConstants.apiUrl}/attendance/report'),
+        headers: {
+          ...ApiConstants.headers(token: token),
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      debugPrint('Attendance Report Response: ${response.body}');
+
+      final decoded = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return AttendanceReportResponseModel.fromJson(
+          decoded as Map<String, dynamic>,
+        );
+      }
+
+      final message = decoded is Map<String, dynamic>
+          ? decoded['message']?.toString()
+          : 'Failed to fetch attendance report.';
 
       throw Exception(message);
     } on FormatException {

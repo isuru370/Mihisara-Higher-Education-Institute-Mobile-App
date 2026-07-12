@@ -48,12 +48,23 @@ class _ClassCategoryPageState extends State<ClassCategoryPage> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         centerTitle: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<ClassCategoryBloc>().add(
+                FetchClassCategoryEvent(
+                  ClassCategoryRequestModel(classId: widget.classId),
+                ),
+              );
+            },
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
       body: Column(
         children: [
-          // Hero Header Section
           _buildHeaderSection(),
-          // Categories List
           Expanded(
             child: BlocBuilder<ClassCategoryBloc, ClassCategoryState>(
               builder: (context, state) {
@@ -210,7 +221,6 @@ class _ClassCategoryPageState extends State<ClassCategoryPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Class Info Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -288,7 +298,6 @@ class _ClassCategoryPageState extends State<ClassCategoryPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Selection Prompt
               Row(
                 children: [
                   Container(
@@ -338,137 +347,212 @@ class _ClassCategoryPageState extends State<ClassCategoryPage> {
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ClassSchedulePage(
-                  className: widget.className,
-                  classId: widget.classId,
-                  classCategoryFeeId: item.id,
-                  categoryName: item.category.categoryName,
-                ),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Category Header
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppColors.primary, Color(0xff1D4ED8)],
-                        ),
-                        borderRadius: BorderRadius.circular(15),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Category Header - Removed chevron icon
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.primary, Color(0xff1D4ED8)],
                       ),
-                      child: const Icon(
-                        Icons.category,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.category.categoryName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xff1F2937),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    child: const Icon(
+                      Icons.category,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.category.categoryName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xff1F2937),
                           ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green[50],
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.green[200]!),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.access_time,
-                                  size: 12,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 12,
+                                color: Colors.green,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Available',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.green,
                                 ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Available',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Course Fee - Below category name
+              Row(
+                children: [
+                  const SizedBox(width: 4),
+                  Text(
+                    'Course Fee:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Rs. ${_formatCurrency(item.fee)}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Divider
+              Divider(color: Colors.grey[200], height: 1),
+              const SizedBox(height: 12),
+              // Two buttons - Attendance and Schedule
+              Row(
+                children: [
+                  // Attendance Button
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/attendance_schedule',
+                          arguments: {
+                            'student_class_id': widget.classId,
+                            'class_category_fee_id': item.id,
+                            'class_name': widget.className,
+                            'category_name': item.category.categoryName,
+                          },
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.assignment_turned_in,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'View Attendance',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Schedule Button
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ClassSchedulePage(
+                              className: widget.className,
+                              classId: widget.classId,
+                              classCategoryFeeId: item.id,
+                              categoryName: item.category.categoryName,
                             ),
                           ),
-                        ],
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [AppColors.primary, Color(0xff1D4ED8)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'View Schedule',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.chevron_right,
-                        size: 20,
-                        color: Color(0xff6B7280),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Divider
-                Divider(color: Colors.grey[200], height: 1),
-                const SizedBox(height: 12),
-                // Fee Information
-                Row(
-                  children: [
-                    const SizedBox(width: 4),
-                    Text(
-                      'Course Fee:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Rs. ${_formatCurrency(item.fee)}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

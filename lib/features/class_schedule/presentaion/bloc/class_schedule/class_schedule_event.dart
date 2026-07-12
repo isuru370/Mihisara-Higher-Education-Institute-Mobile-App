@@ -56,3 +56,14 @@ class CancelClassScheduleEvent
   @override
   List<Object?> get props => [request];
 }
+
+class FetchAttendanceScheduleEvent extends ClassScheduleEvent {
+  final AttendanceScheduleRequestModel request;
+
+  const FetchAttendanceScheduleEvent(
+    this.request,
+  );
+
+  @override
+  List<Object?> get props => [request];
+}

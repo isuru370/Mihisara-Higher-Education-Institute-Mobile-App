@@ -98,7 +98,7 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
 
     final student = StudentModel(
       temporaryQrCode: 'TMP${_temporaryQrCodeController.text.trim()}',
-      quickImageId: quickImageText.isEmpty ? null : quickImageText,
+      quickImageId: (quickImageText.isEmpty) ? null : quickImageText,
       initialName: _lnameController.text.trim(),
       gender: _selectedGender,
       guardianMobile: _guardianMobileController.text.trim(),

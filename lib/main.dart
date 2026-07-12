@@ -5,9 +5,8 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'app.dart';
-import 'core/di/injection_container.dart';
 import 'core/di/injection_container.dart' as di;
-
+import 'core/di/injection_container.dart';
 import 'features/admission/presentaion/bloc/admission/admission_bloc.dart';
 import 'features/attendance/presentaion/bloc/attendance/attendance_bloc.dart';
 import 'features/auth/presentation/bloc/auth/auth_bloc.dart';
@@ -23,6 +22,7 @@ import 'features/qr/presentation/bloc/read_payment/read_payment_bloc.dart';
 import 'features/qr/presentation/bloc/read_student/read_student_bloc.dart';
 import 'features/qr/presentation/bloc/read_student_classes/read_student_classes_bloc.dart';
 import 'features/qr/presentation/bloc/read_tute/read_tute_bloc.dart';
+import 'features/qr/presentation/bloc/scan_attendance/scan_attendance_bloc.dart';
 import 'features/student_classes/presentaion/bloc/class_room/class_room_bloc.dart';
 import 'features/student_grade/presentation/bloc/student_grade/student_grade_bloc.dart';
 import 'features/student_image/presentaion/bloc/student_image/student_image_bloc.dart';
@@ -31,7 +31,6 @@ import 'features/students/presentaion/bloc/student_classes/student_classes_bloc.
 import 'features/students/presentaion/bloc/students/students_bloc.dart';
 import 'features/today_attendance/presentation/bloc/daily_attendance_details/daily_attendance_details_bloc.dart';
 import 'features/today_classes/presentaion/bloc/today_classes/today_classes_bloc.dart';
-
 import 'simple_bloc_observer.dart';
 
 Future<void> main() async {
@@ -41,9 +40,7 @@ Future<void> main() async {
 
   // Sri Lanka Timezone
   tz.initializeTimeZones();
-  tz.setLocalLocation(
-    tz.getLocation('Asia/Colombo'),
-  );
+  tz.setLocalLocation(tz.getLocation('Asia/Colombo'));
 
   Bloc.observer = SimpleBlocObserver();
 
@@ -57,6 +54,7 @@ Future<void> main() async {
         BlocProvider(create: (_) => sl<ReadPaymentBloc>()),
         BlocProvider(create: (_) => sl<MarkPaymentBloc>()),
         BlocProvider(create: (_) => sl<ReadAttendanceBloc>()),
+        BlocProvider(create: (_) => sl<ScanAttendanceBloc>()),
         BlocProvider(create: (_) => sl<AttendanceBloc>()),
         BlocProvider(create: (_) => sl<ReadStudentBloc>()),
         BlocProvider(create: (_) => sl<StudentClassesBloc>()),

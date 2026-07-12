@@ -49,6 +49,15 @@ final class CancelClassScheduleSuccess extends ClassScheduleState {
   List<Object?> get props => [response];
 }
 
+final class AttendanceScheduleLoaded extends ClassScheduleState {
+  final AttendanceScheduleResponseModel response;
+
+  const AttendanceScheduleLoaded(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
 final class ClassScheduleError extends ClassScheduleState {
   final String message;
 

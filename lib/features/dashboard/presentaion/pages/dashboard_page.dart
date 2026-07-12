@@ -473,7 +473,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     icon: Icons.fact_check_rounded,
                     title: 'Attendance',
                     onTap: () {
-                      Navigator.pushNamed(context, '/today-class');
+                      Navigator.pushNamed(
+                        context,
+                        '/qr-scan',
+                        arguments: {'type': ScanType.attendance},
+                      );
+                      // Navigator.pushNamed(context, '/today-class');
                     },
                   ),
 

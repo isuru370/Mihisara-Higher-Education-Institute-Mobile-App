@@ -4,6 +4,7 @@ import '../data/datasources/class_schedule_remote_datasource.dart';
 import '../data/repository/class_schedule_repository_impl.dart';
 import '../domain/repository/class_schedule_repository.dart';
 import '../domain/usecase/add_new_day_usecase.dart';
+import '../domain/usecase/attendance_schedule_usecase.dart';
 import '../domain/usecase/cancel_class_schedule_usecase.dart';
 import '../domain/usecase/fetch_class_category_usecase.dart';
 import '../domain/usecase/fetch_class_schedule_usecase.dart';
@@ -46,6 +47,10 @@ Future<void> classScheduleDI() async {
     () => FetchClassCategoryUseCase(sl()),
   );
 
+  sl.registerLazySingleton<AttendanceScheduleUseCase>(
+    () => AttendanceScheduleUseCase(sl()),
+  );
+
   // BLOC
   sl.registerFactory<ClassScheduleBloc>(
     () => ClassScheduleBloc(
@@ -53,6 +58,7 @@ Future<void> classScheduleDI() async {
       addNewDayUseCase: sl(),
       updateClassScheduleUseCase: sl(),
       cancelClassScheduleUseCase: sl(),
+      attendanceScheduleUseCase: sl(),
     ),
   );
 

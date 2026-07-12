@@ -10,9 +10,7 @@ abstract class AttendanceEvent extends Equatable {
 class MarkAttendanceRequested extends AttendanceEvent {
   final AttendanceRequestModel request;
 
-  const MarkAttendanceRequested({
-    required this.request,
-  });
+  const MarkAttendanceRequested({required this.request});
 
   @override
   List<Object?> get props => [request];
@@ -21,10 +19,17 @@ class MarkAttendanceRequested extends AttendanceEvent {
 class AttendanceHistoryRequested extends AttendanceEvent {
   final AttendanceHistoryRequestModel request;
 
-  const AttendanceHistoryRequested({
-    required this.request,
-  });
+  const AttendanceHistoryRequested({required this.request});
 
   @override
   List<Object?> get props => [request];
+}
+
+class AttendanceReportRequested extends AttendanceEvent {
+  final int scheduleId;
+
+  const AttendanceReportRequested({required this.scheduleId});
+
+  @override
+  List<Object?> get props => [scheduleId];
 }

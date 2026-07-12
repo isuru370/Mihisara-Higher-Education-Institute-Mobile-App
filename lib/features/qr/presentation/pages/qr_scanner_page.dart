@@ -8,11 +8,11 @@ import '../../../../core/enums/scan_type.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../route_observer.dart';
 import '../../../students/presentaion/pages/single_student_view_page.dart';
-import '../bloc/read_attendance/read_attendance_bloc.dart';
 import '../bloc/read_payment/read_payment_bloc.dart';
 import '../bloc/read_student/read_student_bloc.dart';
 import '../bloc/read_student_classes/read_student_classes_bloc.dart';
 import '../bloc/read_tute/read_tute_bloc.dart';
+import '../bloc/scan_attendance/scan_attendance_bloc.dart';
 
 class QrScannerPage extends StatefulWidget {
   final ScanType scanType;
@@ -144,16 +144,10 @@ class _QrScannerPageState extends State<QrScannerPage> with RouteAware {
 
     switch (widget.scanType) {
       case ScanType.attendance:
-        if (widget.studentClassId != null &&
-            widget.classCategoryFeeId != null) {
-          context.read<ReadAttendanceBloc>().add(
-            ReadAttendanceRequested(
-              qrCode: trimmedValue,
-              studentClassId: widget.studentClassId!,
-              classCategoryFeeId: widget.classCategoryFeeId!,
-            ),
-          );
-        }
+        context.read<ScanAttendanceBloc>().add(
+          ScanAttendanceRequested(qrCode: trimmedValue),
+        );
+
         break;
 
       case ScanType.payment:
@@ -237,26 +231,26 @@ class _QrScannerPageState extends State<QrScannerPage> with RouteAware {
 
     return MultiBlocListener(
       listeners: [
-        BlocListener<ReadAttendanceBloc, ReadAttendanceState>(
+        BlocListener<ScanAttendanceBloc, ScanAttendanceState>(
           listenWhen: (previous, current) =>
-              current is ReadAttendanceLoaded || current is ReadAttendanceError,
+              current is ScanAttendanceSuccess ||
+              current is ScanAttendanceFailure,
           listener: (context, state) async {
-            if (state is ReadAttendanceLoaded) {
+            if (state is ScanAttendanceSuccess) {
               await _safeStopScanner();
               if (!mounted) return;
 
               Navigator.pushNamed(
                 context,
-                '/attendance-details',
+                '/attendance-details-new',
                 arguments: {
-                  'attendanceData': state.data,
-                  'class_schedule_id': widget.classScheduleId,
+                  'attendanceData': state.response,
                   'mark_method': _pendingMarkMethod,
                 },
               );
             }
 
-            if (state is ReadAttendanceError) {
+            if (state is ScanAttendanceFailure) {
               _showSnackBar(state.message);
               _resetScanner();
             }

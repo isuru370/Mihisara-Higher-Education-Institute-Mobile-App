@@ -12,6 +12,7 @@ import '../../features/qr/core/read_attendance_injection.dart';
 import '../../features/qr/core/read_payment_injection.dart';
 import '../../features/qr/core/read_student_classes_injection.dart';
 import '../../features/qr/core/read_tute_injection.dart';
+import '../../features/qr/core/scan_attendance_injection.dart';
 import '../../features/student_classes/core/class_room_injection.dart';
 import '../../features/student_grade/core/student_grade_injection.dart';
 import '../../features/student_image/core/student_image_injection.dart';
@@ -33,6 +34,7 @@ Future<void> init() async {
   await initReadPaymentDI();
   await initMarkPaymentDI();
   await initReadAttendanceDI();
+  await initScanAttendanceDI();
   await initMarkAttendanceDI();
   await initImageUploadDI();
   await initMobileDashboardDI();

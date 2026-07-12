@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/app_exceptions.dart';
 import '../../../../core/storage/session_storage.dart';
+import '../model/attendance_schedule/attendance_schedule_request_model.dart';
+import '../model/attendance_schedule/attendance_schedule_response_model.dart';
 import '../model/cancel/class_cancel_request_model.dart';
 import '../model/cancel/class_cancel_response_model.dart';
 import '../model/class_categry/class_category_request_model.dart';
@@ -220,6 +222,47 @@ class ClassScheduleRemoteDatasource {
       throw NetworkException('No internet connection');
     } catch (e) {
       debugPrint('CANCEL SCHEDULE ERROR: $e');
+      rethrow;
+    }
+  }
+
+  Future<AttendanceScheduleResponseModel> fetchAttendanceSchedules(
+    AttendanceScheduleRequestModel request,
+  ) async {
+    try {
+      final token = await _getToken();
+
+      final response = await http.post(
+        Uri.parse('${ApiConstants.apiUrl}/attendance/schedules'),
+        headers: ApiConstants.headers(token: token),
+        body: jsonEncode(request.toJson()),
+      );
+
+      debugPrint('ATTENDANCE SCHEDULE RESPONSE CODE: ${response.statusCode}');
+
+      debugPrint('ATTENDANCE SCHEDULE RESPONSE BODY: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return AttendanceScheduleResponseModel.fromJson(
+          jsonDecode(response.body),
+        );
+      } else if (response.statusCode == 401) {
+        throw UnauthorizedException('Unauthorized');
+      } else {
+        final body = jsonDecode(response.body);
+
+        throw ServerException(
+          body['message'] ?? 'Server error',
+          response.statusCode,
+        );
+      }
+    } on http.ClientException catch (e) {
+      debugPrint('NETWORK ERROR: $e');
+
+      throw NetworkException('No internet connection');
+    } catch (e) {
+      debugPrint('ATTENDANCE SCHEDULE ERROR: $e');
+
       rethrow;
     }
   }

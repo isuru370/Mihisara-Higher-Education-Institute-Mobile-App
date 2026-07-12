@@ -1,3 +1,6 @@
+import 'package:nexorait_education_app/features/class_schedule/data/model/attendance_schedule/attendance_schedule_request_model.dart';
+import 'package:nexorait_education_app/features/class_schedule/data/model/attendance_schedule/attendance_schedule_response_model.dart';
+
 import '../../domain/repository/class_schedule_repository.dart';
 import '../datasources/class_schedule_remote_datasource.dart';
 import '../model/cancel/class_cancel_request_model.dart';
@@ -53,5 +56,12 @@ class ClassScheduleRepositoryImpl implements ClassScheduleRepository {
     ClassCategoryRequestModel request,
   ) {
     return remoteDataSource.fetchClassCategory(request);
+  }
+
+  @override
+  Future<AttendanceScheduleResponseModel> fetchClassCategoryById(
+    AttendanceScheduleRequestModel request,
+  ) {
+    return remoteDataSource.fetchAttendanceSchedules(request);
   }
 }

@@ -4,8 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/atendance_request_model.dart';
 import '../../../data/models/attendance_history/attendance_history_request_model.dart';
 import '../../../data/models/attendance_history/attendance_history_response_model.dart';
+import '../../../data/models/attendance_report/attendance_report_request_model.dart';
+import '../../../data/models/attendance_report/attendance_report_response_model.dart';
 import '../../../data/models/attendance_response_model.dart';
 import '../../../domain/usecases/get_attendance_history_usecase.dart';
+import '../../../domain/usecases/get_attendance_report_usecase.dart';
 import '../../../domain/usecases/mark_attendance_usecase.dart';
 
 part 'attendance_event.dart';
@@ -14,13 +17,16 @@ part 'attendance_state.dart';
 class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   final MarkAttendanceUseCase markAttendanceUseCase;
   final GetAttendanceHistoryUseCase getAttendanceHistoryUseCase;
+  final GetAttendanceReportUseCase getAttendanceReportUseCase;
 
   AttendanceBloc({
     required this.markAttendanceUseCase,
     required this.getAttendanceHistoryUseCase,
+    required this.getAttendanceReportUseCase,
   }) : super(AttendanceInitial()) {
     on<MarkAttendanceRequested>(_onMarkAttendanceRequested);
     on<AttendanceHistoryRequested>(_onAttendanceHistoryRequested);
+    on<AttendanceReportRequested>(_onAttendanceReportRequested);
   }
 
   Future<void> _onMarkAttendanceRequested(
@@ -50,6 +56,24 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(AttendanceHistoryLoaded(response: result));
     } catch (e) {
       emit(AttendanceHistoryError(message: _extractErrorMessage(e)));
+    }
+  }
+  Future<void> _onAttendanceReportRequested(
+    AttendanceReportRequested event,
+    Emitter<AttendanceState> emit,
+  ) async {
+    emit(AttendanceReportLoading());
+
+    try {
+      final result = await getAttendanceReportUseCase.execute(
+        request: AttendanceReportRequestModel(
+          scheduleId: event.scheduleId,
+        ),
+      );
+
+      emit(AttendanceReportLoaded(response: result));
+    } catch (e) {
+      emit(AttendanceReportError(message: _extractErrorMessage(e)));
     }
   }
 

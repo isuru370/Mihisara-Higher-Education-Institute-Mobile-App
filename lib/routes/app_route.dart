@@ -14,6 +14,9 @@ import 'package:nexorait_education_app/features/today_classes/presentaion/page/t
 import '../features/admission/presentaion/page/admission_payment_page.dart';
 import '../features/attendance/presentaion/pages/attendance_history_page.dart';
 import '../features/attendance/presentaion/pages/attendance_page.dart';
+import '../features/attendance/presentaion/pages/attendance_page_new.dart';
+import '../features/attendance/presentaion/pages/attendance_report_page.dart';
+import '../features/attendance/presentaion/pages/attendance_schedule_page.dart';
 import '../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
 import '../features/auth/domain/usecases/login_usecase.dart';
@@ -26,6 +29,7 @@ import '../features/printer/presentaion/page/print_test_page.dart';
 import '../features/qr/data/model/read_attendance/read_attendance_data_model.dart';
 import '../features/qr/data/model/read_student_classes/read_student_classes_response_model.dart';
 import '../features/qr/data/model/read_tute/read_tute_response_model.dart';
+import '../features/qr/data/model/scan_attendance_new/scan_attendance_response_model.dart';
 import '../features/qr/presentation/pages/qr_scanner_page.dart';
 import '../features/splash_screen.dart';
 import '../features/student_image/presentaion/pages/student_image_page.dart';
@@ -96,7 +100,7 @@ class AppRoutes {
       case '/today-class':
         return MaterialPageRoute(builder: (_) => TodayClassesPage());
 
-        case '/class_ongoing':
+      case '/class_ongoing':
         return MaterialPageRoute(builder: (_) => OngoingClassPage());
 
       case '/attendance-details':
@@ -107,6 +111,31 @@ class AppRoutes {
             attendanceData: args['attendanceData'] as ReadAttendanceDataModel,
             markMethod: args['mark_method'] as String?,
           ),
+        );
+      case '/attendance-details-new':
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => AttendancePageNew(
+            attendanceData:
+                args['attendanceData'] as ScanAttendanceResponseModel,
+            markMethod: args['mark_method'] as String?,
+          ),
+        );
+      case '/attendance_schedule':
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => AttendanceSchedulePage(
+            studentClassId: args['student_class_id'],
+            classCategoryFeeId: args['class_category_fee_id'],
+            className: args['class_name'],
+            categoryName: args['category_name'],
+          ),
+        );
+
+      case '/attendance_report':
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => AttendanceReportPage(scheduleId: args['schedule_id']),
         );
       case '/today-attendance':
         final args = settings.arguments as Map<String, dynamic>; // cast as Map
