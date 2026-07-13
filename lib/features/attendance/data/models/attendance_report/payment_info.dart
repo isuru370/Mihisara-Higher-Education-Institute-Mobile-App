@@ -2,7 +2,7 @@ class PaymentInfo {
   final bool isPaid;
   final String? paymentMonth;
   final String? paidAt;
-  final int? amount;
+  final double? amount;
   final String? receiptNumber;
 
   PaymentInfo({
@@ -18,7 +18,9 @@ class PaymentInfo {
       isPaid: json['is_paid'] ?? false,
       paymentMonth: json['payment_month'],
       paidAt: json['paid_at'],
-      amount: json['amount'],
+      amount: json['amount'] == null
+          ? null
+          : double.tryParse(json['amount'].toString()),
       receiptNumber: json['receipt_number'],
     );
   }

@@ -1,6 +1,6 @@
 import 'schedule_data.dart';
-import 'summary_data.dart';
 import 'student_data.dart';
+import 'summary_data.dart';
 
 class AttendanceReportData {
   final ScheduleData schedule;
@@ -17,7 +17,7 @@ class AttendanceReportData {
     return AttendanceReportData(
       schedule: ScheduleData.fromJson(json['schedule']),
       summary: SummaryData.fromJson(json['summary']),
-      students: (json['students'] as List)
+      students: (json['students'] as List? ?? [])
           .map((e) => StudentData.fromJson(e))
           .toList(),
     );

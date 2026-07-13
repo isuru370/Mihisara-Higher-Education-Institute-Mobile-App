@@ -399,9 +399,7 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
               CircleAvatar(
                 radius: 34,
                 backgroundColor: Colors.white,
-                backgroundImage: hasImage
-                    ? NetworkImage(student.imgUrl!)
-                    : null,
+                backgroundImage: hasImage ? NetworkImage(student.imgUrl) : null,
                 child: !hasImage
                     ? const Icon(
                         Icons.person_rounded,

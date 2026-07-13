@@ -356,28 +356,28 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                             children: [
                               const Icon(
                                 Icons.access_time,
-                                size: 14,
+                                size: 11,
                                 color: Colors.white70,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '${_formatTime(schedule.startTime)} - ${_formatTime(schedule.endTime)}',
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 11,
                                   color: Colors.white70,
                                 ),
                               ),
                               const SizedBox(width: 16),
                               const Icon(
                                 Icons.calendar_today,
-                                size: 14,
+                                size: 11,
                                 color: Colors.white70,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 _formatDate(schedule.classDate),
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 11,
                                   color: Colors.white70,
                                 ),
                               ),

@@ -15,15 +15,11 @@ class AttendanceReportResponseModel {
     return AttendanceReportResponseModel(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      data: AttendanceReportData.fromJson(json['data']),
+      data: AttendanceReportData.fromJson(json['data'] ?? {}),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'success': success,
-      'message': message,
-      'data': data.toJson(),
-    };
+    return {'success': success, 'message': message, 'data': data.toJson()};
   }
 }
