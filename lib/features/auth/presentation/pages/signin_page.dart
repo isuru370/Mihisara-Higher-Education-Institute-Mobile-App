@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/storage/session_storage.dart';
 import '../bloc/auth/auth_bloc.dart';
 
 class SigninPage extends StatefulWidget {
@@ -18,10 +19,24 @@ class _SigninPageState extends State<SigninPage> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final email = await SessionStorage.getSavedEmail();
+
+    if (email != null) {
+      _emailController.text = email;
+    }
   }
 
   InputDecoration _inputDecoration({

@@ -24,4 +24,9 @@ class StudentRepositoryImpl implements StudentsRepository {
   Future<CreateStudentResponseModel> createStudent(
     StudentModel student,
   ) => remote.createStudent(student);
+
+  @override
+  Future<CreateStudentResponseModel> createNewStudent(
+    StudentModel student,
+  ) => remote.createNewStudent(student);
 }

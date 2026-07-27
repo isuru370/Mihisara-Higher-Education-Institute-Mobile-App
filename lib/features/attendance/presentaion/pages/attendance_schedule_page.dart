@@ -24,6 +24,8 @@ class AttendanceSchedulePage extends StatefulWidget {
 }
 
 class _AttendanceSchedulePageState extends State<AttendanceSchedulePage> {
+  bool _isGeneratingPdf = false;
+
   @override
   void initState() {
     super.initState();
@@ -52,147 +54,198 @@ class _AttendanceSchedulePageState extends State<AttendanceSchedulePage> {
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed: () {
-              context.read<ClassScheduleBloc>().add(
-                FetchAttendanceScheduleEvent(
-                  AttendanceScheduleRequestModel(
-                    studentClassId: widget.studentClassId,
-                    classCategoryFeeId: widget.classCategoryFeeId,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.refresh),
+            onPressed: _isGeneratingPdf
+                ? null
+                : () {
+                    context.read<ClassScheduleBloc>().add(
+                      FetchAttendanceScheduleEvent(
+                        AttendanceScheduleRequestModel(
+                          studentClassId: widget.studentClassId,
+                          classCategoryFeeId: widget.classCategoryFeeId,
+                        ),
+                      ),
+                    );
+                  },
+            icon: _isGeneratingPdf
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.refresh),
             tooltip: 'Refresh',
           ),
         ],
       ),
-      body: BlocBuilder<ClassScheduleBloc, ClassScheduleState>(
-        builder: (context, state) {
-          if (state is ClassScheduleLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
+      body: Stack(
+        children: [
+          BlocBuilder<ClassScheduleBloc, ClassScheduleState>(
+            builder: (context, state) {
+              if (state is ClassScheduleLoading) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primary,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Loading attendance schedules...',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Loading attendance schedules...',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-            );
-          }
+                );
+              }
 
-          if (state is ClassScheduleError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading schedules',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    state.message,
-                    style: TextStyle(color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      context.read<ClassScheduleBloc>().add(
-                        FetchAttendanceScheduleEvent(
-                          AttendanceScheduleRequestModel(
-                            studentClassId: widget.studentClassId,
-                            classCategoryFeeId: widget.classCategoryFeeId,
+              if (state is ClassScheduleError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 80,
+                        color: Colors.red[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error loading schedules',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.message,
+                        style: TextStyle(color: Colors.grey[600]),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          context.read<ClassScheduleBloc>().add(
+                            FetchAttendanceScheduleEvent(
+                              AttendanceScheduleRequestModel(
+                                studentClassId: widget.studentClassId,
+                                classCategoryFeeId: widget.classCategoryFeeId,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    ],
+                  ),
+                );
+              }
+
+              if (state is AttendanceScheduleLoaded) {
+                if (state.response.data.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 80,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No schedules found',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No attendance schedules available for this category',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: [
+                    // Header Section
+                    _buildHeaderSection(),
+                    // Schedule List
+                    Expanded(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: state.response.data.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final item = state.response.data[index];
+                          return _buildScheduleCard(item);
+                        },
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
+                  ],
+                );
+              }
 
-          if (state is AttendanceScheduleLoaded) {
-            if (state.response.data.isEmpty) {
-              return Center(
+              return const SizedBox();
+            },
+          ),
+          // Loading Overlay for PDF Generation
+          if (_isGeneratingPdf)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      size: 80,
-                      color: Colors.grey[400],
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 20),
                     Text(
-                      'No schedules found',
+                      'Generating PDF...',
                       style: TextStyle(
+                        color: Colors.white,
                         fontSize: 16,
-                        color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
-                      'No attendance schedules available for this category',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      'Please wait',
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                   ],
                 ),
-              );
-            }
-
-            return Column(
-              children: [
-                // Header Section
-                _buildHeaderSection(),
-                // Schedule List
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: state.response.data.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final item = state.response.data[index];
-                      return _buildScheduleCard(item);
-                    },
-                  ),
-                ),
-              ],
-            );
-          }
-
-          return const SizedBox();
-        },
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -375,15 +428,30 @@ class _AttendanceSchedulePageState extends State<AttendanceSchedulePage> {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
-          onTap: () {
-            // Navigate to attendance report page
+          onTap: _isGeneratingPdf
+              ? null
+              : () async {
+                  // Show loading indicator
+                  setState(() {
+                    _isGeneratingPdf = true;
+                  });
 
-            Navigator.pushNamed(
-              context,
-              '/attendance_report',
-              arguments: {'schedule_id': item.scheduleId},
-            );
-          },
+                  try {
+                    // Navigate to attendance report page
+                    await Navigator.pushNamed(
+                      context,
+                      '/attendance_report',
+                      arguments: {'schedule_id': item.scheduleId},
+                    );
+                  } finally {
+                    // Hide loading indicator
+                    if (mounted) {
+                      setState(() {
+                        _isGeneratingPdf = false;
+                      });
+                    }
+                  }
+                },
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(16),

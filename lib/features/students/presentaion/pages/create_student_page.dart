@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/printer_service.dart';
 import '../../../student_grade/presentation/bloc/student_grade/student_grade_bloc.dart';
+import '../../data/models/admission_dialog_result.dart';
 import '../../data/models/students_model.dart';
 import '../bloc/students/students_bloc.dart';
 import '../widgets/admission_dialog.dart';
@@ -634,11 +635,4 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
       _selectedGender = 'male';
     });
   }
-}
-
-class AdmissionDialogResult {
-  final bool submitted;
-  final int? admissionId;
-
-  AdmissionDialogResult({required this.submitted, this.admissionId});
 }

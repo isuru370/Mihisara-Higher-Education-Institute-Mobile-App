@@ -156,60 +156,109 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
   }
 
   Widget _buildContent(AttendanceReportResponseModel data) {
+    // Filter students into present and absent
+    final presentStudents = data.data.students
+        .where((s) => s.attendance.isPresent)
+        .toList();
+
+    final absentStudents = data.data.students
+        .where((s) => !s.attendance.isPresent)
+        .toList();
+
+    // Sort present students - paid first
+    presentStudents.sort((a, b) {
+      if (a.payment.isPaid == b.payment.isPaid) return 0;
+      return a.payment.isPaid ? -1 : 1;
+    });
+
+    // Sort absent students - paid first
+    absentStudents.sort((a, b) {
+      if (a.payment.isPaid == b.payment.isPaid) return 0;
+      return a.payment.isPaid ? -1 : 1;
+    });
+
     return CustomScrollView(
       slivers: [
         // Header Section
         SliverToBoxAdapter(child: _buildHeaderSection(data)),
+
         // Summary Section
         SliverToBoxAdapter(
           child: AttendanceSummaryCard(summary: data.data.summary),
         ),
-        // Students List Title
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Students List',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${data.data.students.length} Students',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
+
+        // Present Students Section
+        if (presentStudents.isNotEmpty) ...[
+          SliverToBoxAdapter(
+            child: _buildSectionTitle(
+              'Present Students',
+              presentStudents.length,
+              Colors.green,
             ),
           ),
-        ),
-        // Students List
-        SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            final student = data.data.students[index];
-            return StudentAttendanceCard(student: student, index: index);
-          }, childCount: data.data.students.length),
-        ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              return StudentAttendanceCard(
+                student: presentStudents[index],
+                index: index,
+              );
+            }, childCount: presentStudents.length),
+          ),
+        ],
+
+        // Absent Students Section
+        if (absentStudents.isNotEmpty) ...[
+          SliverToBoxAdapter(
+            child: _buildSectionTitle(
+              'Absent Students',
+              absentStudents.length,
+              Colors.red,
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              return StudentAttendanceCard(
+                student: absentStudents[index],
+                index: index,
+              );
+            }, childCount: absentStudents.length),
+          ),
+        ],
+
         const SliverToBoxAdapter(child: SizedBox(height: 80)),
       ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title, int count, Color color) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+      child: Row(
+        children: [
+          Icon(Icons.people, color: color),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

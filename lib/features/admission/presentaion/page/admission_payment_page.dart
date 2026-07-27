@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/printer_service.dart';
 import '../../../admission/presentaion/bloc/admission/admission_bloc.dart';
-import '../../../students/presentaion/pages/create_student_page.dart';
+import '../../../students/data/models/admission_dialog_result.dart';
 import '../../../students/presentaion/widgets/admission_dialog.dart';
 import '../../../students/presentaion/widgets/admission_receipt_print.dart';
 import '../../data/model/payment/admission_payment_model.dart';

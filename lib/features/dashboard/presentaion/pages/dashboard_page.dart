@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nexorait_education_app/core/enums/scan_type.dart';
 
+import '../../../../core/enums/scan_student_card.dart';
 import '../../../../core/storage/session_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/printer_service.dart';
@@ -417,6 +418,18 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
 
                   _drawerTile(
+                    icon: Icons.person_add_alt_1_rounded,
+                    title: 'Register Student',
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/qr-scan-student-card',
+                        arguments: {'type': ScanStudentCard.studentCard},
+                      );
+                    },
+                  ),
+
+                  _drawerTile(
                     icon: Icons.image_outlined,
                     title: 'Capture Image',
                     onTap: () {
@@ -440,7 +453,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     icon: Icons.school_rounded,
                     title: 'Student Images',
                     onTap: () {
-                      Navigator.pushNamed(context, '/student_image_page');
+                      Navigator.pushNamed(
+                        context,
+                        '/qr-scan-student-card',
+                        arguments: {'type': ScanStudentCard.studentImage},
+                      );
                     },
                   ),
 
@@ -448,6 +465,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   // SECTION 2: CLASS & ATTENDANCE
                   _sectionHeader('CLASS & ATTENDANCE', Icons.class_rounded),
+
+                  _drawerTile(
+                    icon: Icons.payments_rounded,
+                    title: 'Today Classes',
+                    onTap: () {
+                      Navigator.pushNamed(context, '/today-class');
+                    },
+                  ),
 
                   _drawerTile(
                     icon: Icons.payments_rounded,
@@ -478,7 +503,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         '/qr-scan',
                         arguments: {'type': ScanType.attendance},
                       );
-                      // Navigator.pushNamed(context, '/today-class');
                     },
                   ),
 
@@ -681,10 +705,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         userName: userName,
 
                         userEmail: userEmail,
-
-                        smsBalance: _money(
-                          dashboard.smsBalance.data.currentBalance,
-                        ),
+                        //dashboard.smsBalance.data.currentBalance
+                        smsBalance: _money("0.00"),
 
                         tokenActive: _token != null,
                       ),
@@ -697,29 +719,39 @@ class _DashboardPageState extends State<DashboardPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: _miniStat(
-                              title: 'Revenue',
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/today-payment');
+                              },
+                              child: _miniStat(
+                                title: 'Revenue',
 
-                              value:
-                                  'LKR ${_money(dashboard.todayPaymentCollection)}',
+                                value:
+                                    'LKR ${_money(dashboard.todayPaymentCollection)}',
 
-                              icon: Icons.payments_rounded,
+                                icon: Icons.payments_rounded,
 
-                              color: AppColors.success,
+                                color: AppColors.success,
+                              ),
                             ),
                           ),
 
                           const SizedBox(width: 12),
 
                           Expanded(
-                            child: _miniStat(
-                              title: 'Today Classes',
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/today-class');
+                              },
+                              child: _miniStat(
+                                title: 'Today Classes',
 
-                              value: dashboard.todayClassCount.toString(),
+                                value: dashboard.todayClassCount.toString(),
 
-                              icon: Icons.today_rounded,
+                                icon: Icons.today_rounded,
 
-                              color: AppColors.warning,
+                                color: AppColors.warning,
+                              ),
                             ),
                           ),
                         ],
@@ -761,14 +793,19 @@ class _DashboardPageState extends State<DashboardPage> {
 
                         children: [
                           _QuickActionCard(
-                            icon: Icons.person_add_alt_1_rounded,
+                            icon: Icons.assignment_turned_in_sharp,
 
-                            label: 'Add Student',
+                            label: 'Attendance',
 
                             color: AppColors.primary,
 
                             onTap: () {
-                              Navigator.pushNamed(context, '/create_student');
+                              Navigator.pushNamed(
+                                context,
+                                '/qr-scan',
+
+                                arguments: {'type': ScanType.attendance},
+                              );
                             },
                           ),
 

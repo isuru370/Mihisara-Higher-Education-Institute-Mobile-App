@@ -112,6 +112,23 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            IconButton(
+              onPressed: () {
+                if (widget.attendanceData.data != null) {
+                  Navigator.pushNamed(
+                    context,
+                    '/capture-image',
+                    arguments: {
+                      'student-id':
+                          widget.attendanceData.data!.student.studentCode,
+                    },
+                  );
+                }
+              },
+              icon: Icon(Icons.camera_alt_outlined),
+            ),
+          ],
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -277,7 +294,8 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
                                         request: AttendanceRequestModel(
                                           studentId: student.id,
                                           classScheduleId: classSchedule.id,
-                                          studentClassId: enrollment.id,
+                                          studentClassId:
+                                              enrollment.studentClassId,
                                           classCategoryFeeId:
                                               enrollment.classCategoryFeeId,
                                           markMethod:
@@ -304,36 +322,6 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
                       ],
                     ),
                   ],
-                ),
-
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.orange.withOpacity(0.25)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.warning_amber_rounded,
-                        color: Colors.orange.shade700,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'This student is not enrolled in this class. To collect payments for this class, the student must first be enrolled.',
-                          style: TextStyle(
-                            color: Colors.orange.shade900,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -399,14 +387,29 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
               CircleAvatar(
                 radius: 34,
                 backgroundColor: Colors.white,
-                backgroundImage: hasImage ? NetworkImage(student.imgUrl) : null,
-                child: !hasImage
-                    ? const Icon(
-                        Icons.person_rounded,
-                        color: AppColors.primary,
-                        size: 34,
-                      )
-                    : null,
+                child: ClipOval(
+                  child: student.imgUrl.isNotEmpty
+                      ? Image.network(
+                          student.imgUrl,
+                          width: 68,
+                          height: 68,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint(error.toString());
+
+                            return const Icon(
+                              Icons.person,
+                              size: 34,
+                              color: AppColors.primary,
+                            );
+                          },
+                        )
+                      : const Icon(
+                          Icons.person,
+                          size: 34,
+                          color: AppColors.primary,
+                        ),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -452,7 +455,7 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
               child: Row(
                 children: [
                   SizedBox(
-                    width: 260,
+                    width: 380,
                     child: _chip(
                       icon: Icons.class_rounded,
                       label:
@@ -461,7 +464,7 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
                   ),
                   const SizedBox(width: 10),
                   SizedBox(
-                    width: 220,
+                    width: 320,
                     child: _chip(
                       icon: Icons.subject_rounded,
                       label:
@@ -470,7 +473,7 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
                   ),
                   const SizedBox(width: 10),
                   SizedBox(
-                    width: 200,
+                    width: 300,
                     child: _chip(
                       icon: Icons.person_rounded,
                       label: 'Teacher: ${classSchedule.studentClass.teacher}',
@@ -498,12 +501,17 @@ class _AttendancePageNewState extends State<AttendancePageNew> {
         children: [
           Icon(icon, size: 16, color: Colors.white),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
             ),
           ),
         ],

@@ -23,6 +23,9 @@ class ScanAttendanceRemoteDatasource {
 
     final jsonBody = jsonDecode(response.body);
 
+    print('STATUS: ${response.statusCode}');
+    print('BODY: ${response.body}');
+
     if (response.statusCode == 200) {
       return ScanAttendanceResponseModel.fromJson(jsonBody);
     } else {

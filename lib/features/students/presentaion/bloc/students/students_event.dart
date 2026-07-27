@@ -35,3 +35,12 @@ final class CreateStudentEvent extends StudentsEvent {
   @override
   List<Object> get props => [student];
 }
+
+final class CreateNewStudentEvent extends StudentsEvent {
+  final StudentModel student;
+
+  const CreateNewStudentEvent({required this.student});
+
+  @override
+  List<Object> get props => [student];
+}

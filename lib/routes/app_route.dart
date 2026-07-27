@@ -23,6 +23,7 @@ import '../features/auth/domain/usecases/login_usecase.dart';
 import '../features/auth/presentation/bloc/auth/auth_bloc.dart';
 import '../features/auth/presentation/pages/signin_page.dart';
 import '../features/dashboard/presentaion/pages/dashboard_page.dart';
+import '../features/image_upload/presentation/pages/camera_screen_page.dart';
 import '../features/image_upload/presentation/pages/student_image_capture_page.dart';
 import '../features/payment/presentaion/pages/payment_history_view_page.dart';
 import '../features/printer/presentaion/page/print_test_page.dart';
@@ -32,9 +33,13 @@ import '../features/qr/data/model/read_tute/read_tute_response_model.dart';
 import '../features/qr/data/model/scan_attendance_new/scan_attendance_response_model.dart';
 import '../features/qr/presentation/pages/qr_scanner_page.dart';
 import '../features/splash_screen.dart';
+import '../features/student_card/presentaion/page/re_assign_card_page.dart';
+import '../features/student_card/presentaion/page/register_details_page.dart';
+import '../features/student_card/presentaion/page/scan_student_card_page.dart';
 import '../features/student_image/presentaion/pages/student_image_page.dart';
 import '../features/student_tute/presentation/pages/create_tute_page.dart';
 import '../features/student_tute/presentation/pages/tute_view_page.dart';
+import '../features/students/presentaion/pages/create_new_student_page.dart';
 
 class AppRoutes {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -78,6 +83,19 @@ class AppRoutes {
         );
       case '/create_student':
         return MaterialPageRoute(builder: (_) => CreateStudentPage());
+      case '/register-student':
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => CreateNewStudentPage(qrCode: args['qrCode']),
+        );
+      case '/register-details':
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => RegisterDetailsPage(
+            qrCode: args['qrCode'],
+            studentCardLoaded: args['response'],
+          ),
+        );
       case '/student-id-numbers':
         final token = settings.arguments as String?;
 
@@ -95,6 +113,33 @@ class AppRoutes {
             classCategoryFeeId: args['class_category_fee_id'],
             classScheduleId: args['class_schedule_id'],
           ),
+        );
+
+      case '/qr-scan-student-card':
+        final args = settings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => ScanStudentCardPage(
+            scanStudentCard: args['type'], // required
+          ),
+        );
+
+      case '/re-assign':
+        final args = settings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => ReAssignCardPage(oldQrCode: args['oldQrCode']),
+        );
+
+      case '/capture-image':
+        final args = settings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) =>
+              CameraScreenPage(studentId: args['student-id'] as String),
         );
 
       case '/today-class':

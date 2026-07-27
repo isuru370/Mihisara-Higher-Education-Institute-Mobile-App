@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/enums/scan_type.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/today_class_item_model.dart';
 import '../bloc/today_classes/today_classes_bloc.dart';
@@ -249,36 +248,63 @@ class _TodayClassesPageState extends State<TodayClassesPage> {
 
             Row(
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/qr-scan',
-                        arguments: {
-                          'type': ScanType.attendance,
-                          'student_class_id': studentClass.id,
-                          'class_category_fee_id': categoryFee.id,
-                          'class_schedule_id': schedule.id,
-                        },
-                      );
-                    },
-                    icon: const Icon(Icons.check_circle_rounded),
-                    label: const Text(
-                      'Mark Attendance',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                // Expanded(
+                //   child: ElevatedButton.icon(
+                //     onPressed: () {
+                //       Navigator.pushNamed(
+                //         context,
+                //         '/qr-scan',
+                //         arguments: {
+                //           'type': ScanType.attendance,
+                //           'student_class_id': studentClass.id,
+                //           'class_category_fee_id': categoryFee.id,
+                //           'class_schedule_id': schedule.id,
+                //         },
+                //       );
+                //     },
+                //     icon: const Icon(Icons.check_circle_rounded),
+                //     label: const Text(
+                //       'Mark Attendance',
+                //       style: TextStyle(fontWeight: FontWeight.w700),
+                //     ),
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: AppColors.primary,
+                //       foregroundColor: Colors.white,
+                //       elevation: 0,
+                //       padding: const EdgeInsets.symmetric(vertical: 14),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(16),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                if (schedule.status == 'ongoing' ||
+                    schedule.status == 'completed')
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/attendance_report',
+                          arguments: {'schedule_id': schedule.id},
+                        );
+                      },
+                      icon: const Icon(Icons.visibility_rounded),
+                      label: const Text(
+                        'View Attendance',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ],

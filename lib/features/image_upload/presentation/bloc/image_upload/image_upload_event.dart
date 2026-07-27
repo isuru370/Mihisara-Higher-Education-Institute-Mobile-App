@@ -15,3 +15,12 @@ class UploadImageEvent extends ImageUploadEvent {
   @override
   List<Object?> get props => [request];
 }
+
+class UpdateImageEvent extends ImageUploadEvent {
+  final ImageUploadRequestModel request;
+
+  const UpdateImageEvent(this.request);
+
+  @override
+  List<Object?> get props => [request];
+}

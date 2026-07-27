@@ -12,4 +12,8 @@ abstract class StudentsRepository {
   Future<CreateStudentResponseModel> createStudent(
     StudentModel student,
   );
+
+  Future<CreateStudentResponseModel> createNewStudent(
+    StudentModel student,
+  );
 }

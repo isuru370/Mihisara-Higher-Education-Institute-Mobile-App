@@ -20,6 +20,15 @@ final class ImageUploadSuccess extends ImageUploadState {
   List<Object?> get props => [response];
 }
 
+final class ImageUpdateSuccess extends ImageUploadState {
+  final ImageUpdateResponseModel response;
+
+  const ImageUpdateSuccess(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
 final class ImageUploadError extends ImageUploadState {
   final String message;
 

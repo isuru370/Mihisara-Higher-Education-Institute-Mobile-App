@@ -2,7 +2,7 @@ class ApiConstants {
   static const String baseUrl = 'https://mihisaraeducation.nexorait.lk';
   static const String apiUrl = '$baseUrl/api';
 
-  //http://10.197.70.230:9000
+  //http://172.17.44.230:8000
   //https://mihisaraeducation.nexorait.lk
 
   static const String login = '$apiUrl/login';

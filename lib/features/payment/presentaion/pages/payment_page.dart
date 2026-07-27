@@ -9,7 +9,6 @@ import '../../../qr/data/model/read_payment/read_student_class_payment_model.dar
 import '../../../qr/presentation/bloc/read_payment/read_payment_bloc.dart';
 import '../../data/models/mark_payment_request_model.dart';
 import '../bloc/mark_payment/mark_payment_bloc.dart';
-import 'utils/payment_discount_calculator.dart';
 import 'utils/payment_receipt_print.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -51,7 +50,6 @@ class _PaymentPageState extends State<PaymentPage> {
             _isSubmitting = true;
           });
         } else if (state is MarkPaymentLoaded) {
-
           await Future.delayed(const Duration(seconds: 3));
 
           setState(() {
@@ -85,7 +83,6 @@ class _PaymentPageState extends State<PaymentPage> {
             );
 
             context.read<MarkPaymentBloc>().add(const ResetMarkPayment());
-
           } catch (e) {
             if (!mounted) return;
 
@@ -458,6 +455,47 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
+  /// Get default payment month based on business rules:
+  /// - If only one class selected: last payment month + 1 month
+  /// - If multiple classes selected: current month
+  DateTime _getDefaultPaymentMonth(
+    List<ReadStudentClassPaymentModel> selectedPayments,
+  ) {
+    // Filter out free cards
+    final payablePayments = selectedPayments
+        .where((item) => !item.isFreeCard)
+        .toList();
+
+    if (payablePayments.isEmpty) {
+      return DateTime.now();
+    }
+
+    // If only one class selected, use last payment + 1 month
+    if (payablePayments.length == 1) {
+      final payment = payablePayments.first;
+      final lastPayment = payment.lastPayment;
+
+      // If no payment history, use current month
+      if (lastPayment == null || lastPayment.paymentMonth == null) {
+        return DateTime.now();
+      }
+
+      try {
+        // Parse the payment month (format: YYYY-MM)
+        final lastMonth = DateTime.parse('${lastPayment.paymentMonth}-01');
+
+        // Add 1 month
+        return DateTime(lastMonth.year, lastMonth.month + 1);
+      } catch (e) {
+        // If parsing fails, use current month
+        return DateTime.now();
+      }
+    }
+
+    // Multiple classes selected - use current month
+    return DateTime.now();
+  }
+
   Future<void> _showPayDialog(
     List<ReadStudentClassPaymentModel> classes,
   ) async {
@@ -475,7 +513,8 @@ class _PaymentPageState extends State<PaymentPage> {
       return;
     }
 
-    DateTime tempSelectedDate = _selectedPaymentDate;
+    // Get default payment month based on business rules
+    DateTime tempSelectedDate = _getDefaultPaymentMonth(selectedPayments);
 
     await showDialog<void>(
       context: context,
@@ -483,12 +522,6 @@ class _PaymentPageState extends State<PaymentPage> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            final discount = PaymentDiscountCalculator.calculate(
-              selectedPayments: selectedPayments,
-              minimumClassesForDiscount: 5,
-              discountRate: 0.10,
-            );
-
             return AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -518,26 +551,34 @@ class _PaymentPageState extends State<PaymentPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _dialogSummaryRow(
-                      'Selected Classes',
-                      discount.selectedCount.toString(),
+                    // Show selected classes count
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.school,
+                            size: 20,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${selectedPayments.length} class(es) selected',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    _dialogSummaryRow(
-                      'Total Fee',
-                      'LKR ${discount.totalFee.toStringAsFixed(2)}',
-                    ),
-                    _dialogSummaryRow(
-                      'Discount',
-                      discount.discountApplied
-                          ? 'LKR ${discount.discountAmount.toStringAsFixed(2)}'
-                          : 'LKR 0.00 (Need 5 or more classes)',
-                    ),
-                    _dialogSummaryRow(
-                      'Payable',
-                      'LKR ${discount.payableTotal.toStringAsFixed(2)}',
-                      bold: true,
-                    ),
-                    const SizedBox(height: 16),
+
+                    // Payment Month Picker
                     InkWell(
                       onTap: () async {
                         final picked = await showMonthYearPicker(
@@ -564,17 +605,125 @@ class _PaymentPageState extends State<PaymentPage> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: Text(
-                          DateFormat('yyyy-MM').format(tempSelectedDate),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              DateFormat('yyyy-MM').format(tempSelectedDate),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_drop_down,
+                              color: Colors.grey,
+                            ),
+                          ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
+
+                    // Show info message based on selection
+                    if (selectedPayments.length == 1)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.blue.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.blue.shade700,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Default month is based on last payment date. You can change it if needed.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.orange.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.orange.shade700,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Multiple classes selected. Default month is current month. You can change it if needed.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.orange.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    const SizedBox(height: 8),
+
+                    // Show selected classes summary
                     const Text(
-                      'Discount applies only when 5 or more classes are selected.',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                      'Selected Classes:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
                     ),
+                    const SizedBox(height: 6),
+                    ...selectedPayments.map((payment) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.circle,
+                              size: 6,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                '${payment.className} - ${payment.subject}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              'LKR ${payment.finalFee}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ],
                 ),
               ),
@@ -627,29 +776,22 @@ class _PaymentPageState extends State<PaymentPage> {
       return;
     }
 
-    final discount = PaymentDiscountCalculator.calculate(
-      selectedPayments: selectedPayments,
-      minimumClassesForDiscount: 5,
-      discountRate: 0.10,
-    );
-
     final studentId = widget.paymentState.response.data!.student.id;
 
     final request = MarkPaymentRequestModel(
       payments: selectedPayments.map((item) {
-        final finalAmount =
-            item.finalFee.toDouble() - discount.perClassDiscount;
+        final finalAmount = item.finalFee.toDouble();
 
         return MarkPaymentItemModel(
           studentId: studentId,
           studentClassEnrollmentId: item.enrollmentId,
           amount: finalAmount,
-          discountAmount: discount.perClassDiscount,
+          discountAmount: 0,
           paymentMonth: DateFormat('yyyy-MM').format(_selectedPaymentDate),
           paidAt: DateTime.now(),
           markMethod: widget.markMethod ?? 'manual_web',
           note:
-              'Student Name ${widget.paymentState.response.data!.student.initialName} | ${item.className} | ${item.categoryName} | Teacher ${item.teacherInitials} | Bulk payment ${discount.discountApplied ? 'with 10% discount' : 'without discount'}',
+              'Student Name ${widget.paymentState.response.data!.student.initialName} | ${item.className} | ${item.categoryName} | Teacher ${item.teacherInitials} | Bulk payment ${'without discount'}',
         );
       }).toList(),
     );
@@ -681,32 +823,6 @@ class _PaymentPageState extends State<PaymentPage> {
               color: color,
               fontWeight: FontWeight.w700,
               fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dialogSummaryRow(String title, String value, {bool bold = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
             ),
           ),
         ],

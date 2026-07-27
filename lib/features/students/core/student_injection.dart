@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import '../data/datasources/students_remote_data_source.dart';
 import '../data/repositories/students_repository_impl.dart';
 import '../domain/repositories/students_repository.dart';
+import '../domain/usecases/create_new_student_usecase.dart';
 import '../domain/usecases/create_student_usecase.dart';
 import '../domain/usecases/get_students_custom_id_usecase.dart';
 import '../domain/usecases/students_usecase.dart';
@@ -21,6 +22,7 @@ Future<void> initStudentDI() async {
 
   //USECASE
   sl.registerLazySingleton(() => CreateStudentUsecase(sl()));
+  sl.registerLazySingleton(() => CreateNewStudentUsecase(sl()));
   sl.registerLazySingleton(() => GetStudentsUseCase(sl()));
   sl.registerLazySingleton(() => GetStudentsCustomIdUsecase(sl()));
 
@@ -28,6 +30,7 @@ Future<void> initStudentDI() async {
   sl.registerFactory(
     () => StudentsBloc(
       createStudentUsecase: sl(),
+      createNewStudentUsecase: sl(),
       getStudentsUseCase: sl(),
       getStudentsCustomIdUsecase: sl(),
     ),

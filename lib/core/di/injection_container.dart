@@ -13,15 +13,16 @@ import '../../features/qr/core/read_payment_injection.dart';
 import '../../features/qr/core/read_student_classes_injection.dart';
 import '../../features/qr/core/read_tute_injection.dart';
 import '../../features/qr/core/scan_attendance_injection.dart';
+import '../../features/student_card/core/student_card_injection.dart';
 import '../../features/student_classes/core/class_room_injection.dart';
 import '../../features/student_grade/core/student_grade_injection.dart';
 import '../../features/student_image/core/student_image_injection.dart';
+import '../../features/student_tute/core/tute_injection.dart';
 import '../../features/students/core/read_student_injection.dart';
 import '../../features/students/core/student_classes_injection.dart';
 import '../../features/students/core/student_injection.dart';
 import '../../features/today_attendance/core/daily_attendance_details_injection.dart';
 import '../../features/today_classes/core/init_today_class_injection.dart';
-import '../../features/student_tute/core/tute_injection.dart';
 
 final sl = GetIt.instance;
 
@@ -48,4 +49,5 @@ Future<void> init() async {
   await initAdmissionDI();
   await classScheduleDI();
   await initInstituteHallsDI();
+  await initStudentCardDI();
 }

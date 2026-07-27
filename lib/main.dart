@@ -23,6 +23,7 @@ import 'features/qr/presentation/bloc/read_student/read_student_bloc.dart';
 import 'features/qr/presentation/bloc/read_student_classes/read_student_classes_bloc.dart';
 import 'features/qr/presentation/bloc/read_tute/read_tute_bloc.dart';
 import 'features/qr/presentation/bloc/scan_attendance/scan_attendance_bloc.dart';
+import 'features/student_card/presentaion/bloc/student_card/student_card_bloc.dart';
 import 'features/student_classes/presentaion/bloc/class_room/class_room_bloc.dart';
 import 'features/student_grade/presentation/bloc/student_grade/student_grade_bloc.dart';
 import 'features/student_image/presentaion/bloc/student_image/student_image_bloc.dart';
@@ -73,6 +74,7 @@ Future<void> main() async {
         BlocProvider(create: (_) => sl<OngoingClassBloc>()),
         BlocProvider(create: (_) => sl<ClassCategoryBloc>()),
         BlocProvider(create: (_) => sl<InstituteHallBloc>()),
+        BlocProvider(create: (_) => sl<StudentCardBloc>()),
       ],
       child: const NexoraMobileApp(),
     ),

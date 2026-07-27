@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../admission/presentaion/bloc/admission/admission_bloc.dart';
-import '../pages/create_student_page.dart';
+import '../../data/models/admission_dialog_result.dart';
 
 class AdmissionDialog extends StatefulWidget {
   const AdmissionDialog({super.key});

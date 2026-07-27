@@ -1,0 +1,1 @@
+enum ScanStudentCard { studentCard,studentImage}

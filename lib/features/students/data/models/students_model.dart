@@ -5,6 +5,7 @@ import 'grade_model.dart';
 
 class StudentModel {
   final int? id;
+  final String? cardQrCode;
 
   final String? temporaryQrCode;
   final DateTime? temporaryQrCodeExpireDate;
@@ -55,6 +56,7 @@ class StudentModel {
 
   StudentModel({
     this.id,
+    this.cardQrCode,
     this.temporaryQrCode,
     this.temporaryQrCodeExpireDate,
     this.customId,
@@ -175,6 +177,18 @@ class StudentModel {
   Map<String, dynamic> toJson() {
     return {
       'temporary_qr_code': temporaryQrCode,
+      'quick_image_id': quickImageId,
+      'initial_name': initialName,
+      'guardian_mobile': guardianMobile,
+      'grade_id': gradeId,
+      'gender': gender,
+      'admission_id': admission,
+    };
+  }
+
+  Map<String, dynamic> toNewJson() {
+    return {
+      'card_qr_code': cardQrCode,
       'quick_image_id': quickImageId,
       'initial_name': initialName,
       'guardian_mobile': guardianMobile,

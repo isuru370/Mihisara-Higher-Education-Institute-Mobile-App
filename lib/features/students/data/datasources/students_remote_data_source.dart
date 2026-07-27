@@ -151,4 +151,50 @@ class StudentRemoteDataSource {
       rethrow;
     }
   }
+
+  Future<CreateStudentResponseModel> createNewStudent(
+    StudentModel student,
+  ) async {
+    try {
+      final token = await SessionStorage.getToken();
+      final uri = Uri.parse('${ApiConstants.apiUrl}/student-new');
+
+      final response = await http.post(
+        uri,
+        headers: {
+          ...ApiConstants.headers(token: token),
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(student.toNewJson()),
+      );
+
+      debugPrint('CREATE STUDENT RESPONSE CODE: ${response.statusCode}');
+      debugPrint('CREATE STUDENT RESPONSE BODY: ${response.body}');
+
+      final decoded = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        return CreateStudentResponseModel.fromJson(
+          decoded as Map<String, dynamic>,
+        );
+      }
+
+      if (response.statusCode == 401) {
+        throw UnauthorizedException('Unauthorized');
+      }
+
+      if (decoded is Map<String, dynamic> && decoded['message'] != null) {
+        throw ServerException(
+          decoded['message'].toString(),
+          response.statusCode,
+        );
+      }
+
+      throw ServerException('Server Error', response.statusCode);
+    } catch (e) {
+      debugPrint('CREATE STUDENT ERROR: $e');
+      rethrow;
+    }
+  }
 }
