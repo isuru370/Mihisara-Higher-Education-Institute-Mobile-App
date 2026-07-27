@@ -23,25 +23,13 @@ class RegisterDetailsPage extends StatelessWidget {
     final student = studentCardLoaded.student;
     final currentCard = studentCardLoaded.currentCard;
     final cards = studentCardLoaded.cards;
-    final message = studentCardLoaded.message ?? '';
+    final message = studentCardLoaded.message;
 
     // Check if current card is inactive
     final isInactive =
-        currentCard?.status?.toLowerCase() == 'inactive' ||
+        currentCard?.status.toLowerCase() == 'inactive' ||
         message == 'This card is no longer active.';
     final canReAssign = !isInactive && currentCard != null;
-
-    // Debug prints
-    print('========== DEBUG INFO ==========');
-    print('Message: $message');
-    print('Is Inactive: $isInactive');
-    print('Student: $student');
-    print('Current Card: $currentCard');
-    print('Current Card QR: ${currentCard?.qrCode}');
-    print('Current Card Number: ${currentCard?.cardNumber}');
-    print('Total Cards: ${cards.length}');
-    print('All Cards: ${cards.map((c) => c.qrCode).toList()}');
-    print('================================');
 
     return Scaffold(
       appBar: AppBar(
