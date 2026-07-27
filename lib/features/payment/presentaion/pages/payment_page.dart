@@ -476,7 +476,7 @@ class _PaymentPageState extends State<PaymentPage> {
       final lastPayment = payment.lastPayment;
 
       // If no payment history, use current month
-      if (lastPayment == null || lastPayment.paymentMonth == null) {
+      if (lastPayment == null) {
         return DateTime.now();
       }
 
