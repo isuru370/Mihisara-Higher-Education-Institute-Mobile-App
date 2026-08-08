@@ -28,3 +28,27 @@ final class ReAssignStudentCardEvent extends StudentCardEvent {
   @override
   List<Object?> get props => [request];
 }
+
+class SearchStudentForAssignmentEvent extends StudentCardEvent {
+  final StudentCardRequestModel request;
+
+  const SearchStudentForAssignmentEvent({
+    required this.request,
+  });
+
+  @override
+  List<Object?> get props => [request];
+}
+
+final class AssignStudentCardEvent
+    extends StudentCardEvent {
+
+  final AssignmentCardRequestModel request;
+
+  const AssignStudentCardEvent({
+    required this.request,
+  });
+
+  @override
+  List<Object?> get props => [request];
+}

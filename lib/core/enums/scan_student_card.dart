@@ -1,1 +1,5 @@
-enum ScanStudentCard { studentCard,studentImage}
+enum ScanStudentCard {
+  studentCard,
+  studentImage,
+  assignStudentCard,
+}

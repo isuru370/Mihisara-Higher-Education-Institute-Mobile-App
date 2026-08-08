@@ -31,11 +31,14 @@ import '../features/qr/data/model/read_attendance/read_attendance_data_model.dar
 import '../features/qr/data/model/read_student_classes/read_student_classes_response_model.dart';
 import '../features/qr/data/model/read_tute/read_tute_response_model.dart';
 import '../features/qr/data/model/scan_attendance_new/scan_attendance_response_model.dart';
+import '../features/qr/presentation/pages/attendance_qr_scanner_page.dart';
 import '../features/qr/presentation/pages/qr_scanner_page.dart';
 import '../features/splash_screen.dart';
+import '../features/student_card/data/model/assignment/assignment_search_student_response_model.dart';
 import '../features/student_card/presentaion/page/re_assign_card_page.dart';
 import '../features/student_card/presentaion/page/register_details_page.dart';
 import '../features/student_card/presentaion/page/scan_student_card_page.dart';
+import '../features/student_card/presentaion/page/student_card_assignment_page.dart';
 import '../features/student_image/presentaion/pages/student_image_page.dart';
 import '../features/student_tute/presentation/pages/create_tute_page.dart';
 import '../features/student_tute/presentation/pages/tute_view_page.dart';
@@ -125,6 +128,15 @@ class AppRoutes {
           ),
         );
 
+      case '/student-card-assignment':
+        final response =
+            settings.arguments as AssignmentSearchStudentResponseModel;
+
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => StudentCardAssignmentPage(response: response),
+        );
+
       case '/re-assign':
         final args = settings.arguments as Map<String, dynamic>;
 
@@ -147,6 +159,9 @@ class AppRoutes {
 
       case '/class_ongoing':
         return MaterialPageRoute(builder: (_) => OngoingClassPage());
+
+      case '/attendance-scan':
+        return MaterialPageRoute(builder: (_) => AttendanceQrScannerPage());
 
       case '/attendance-details':
         final args = settings.arguments as Map<String, dynamic>;

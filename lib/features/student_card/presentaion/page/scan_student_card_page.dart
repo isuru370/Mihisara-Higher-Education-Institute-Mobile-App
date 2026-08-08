@@ -136,6 +136,8 @@ class _ScanStudentCardPageState extends State<ScanStudentCardPage>
       _isScanned = true;
       _isHandlingResult = true;
       _lastScannedValue = trimmedValue;
+      // ✅ QR value එක TextField එකට set කරන්න
+      _customIdController.text = trimmedValue.toUpperCase();
     });
 
     _focusNode.unfocus();
@@ -160,6 +162,15 @@ class _ScanStudentCardPageState extends State<ScanStudentCardPage>
           _resetScanner();
         });
         break;
+      case ScanStudentCard.assignStudentCard:
+        context.read<StudentCardBloc>().add(
+          SearchStudentForAssignmentEvent(
+            request: StudentCardRequestModel(
+              qrCode: trimmedValue.toUpperCase(),
+            ),
+          ),
+        );
+        break;
     }
   }
 
@@ -178,6 +189,8 @@ class _ScanStudentCardPageState extends State<ScanStudentCardPage>
         return 'Scan Student Card QR';
       case ScanStudentCard.studentImage:
         return 'Capture Student Image';
+      case ScanStudentCard.assignStudentCard:
+        return 'Assign Student Card';
     }
   }
 
@@ -218,7 +231,9 @@ class _ScanStudentCardPageState extends State<ScanStudentCardPage>
       listeners: [
         BlocListener<StudentCardBloc, StudentCardState>(
           listenWhen: (previous, current) =>
-              current is StudentCardLoaded || current is StudentCardError,
+              current is StudentCardLoaded ||
+              current is SearchStudentForAssignmentLoaded ||
+              current is StudentCardError,
           listener: (context, state) async {
             if (state is StudentCardLoaded) {
               await _safeStopScanner();
@@ -226,14 +241,14 @@ class _ScanStudentCardPageState extends State<ScanStudentCardPage>
               if (!mounted) return;
 
               if (state.response.status) {
-                // Card available
                 Navigator.pushNamed(
                   context,
                   '/register-student',
                   arguments: {'qrCode': _lastScannedValue.toUpperCase()},
-                );
+                ).then((_) {
+                  _resetScanner();
+                });
               } else {
-                // Card already assigned
                 Navigator.pushNamed(
                   context,
                   '/register-details',
@@ -241,11 +256,23 @@ class _ScanStudentCardPageState extends State<ScanStudentCardPage>
                     'qrCode': _lastScannedValue.toUpperCase(),
                     'response': state.response,
                   },
-                );
+                ).then((_) {
+                  _resetScanner();
+                });
               }
-            }
+            } else if (state is SearchStudentForAssignmentLoaded) {
+              await _safeStopScanner();
 
-            if (state is StudentCardError) {
+              if (!mounted) return;
+
+              Navigator.pushNamed(
+                context,
+                '/student-card-assignment',
+                arguments: state.response,
+              ).then((_) {
+                _resetScanner();
+              });
+            } else if (state is StudentCardError) {
               _showSnackBar(state.message);
               _resetScanner();
             }

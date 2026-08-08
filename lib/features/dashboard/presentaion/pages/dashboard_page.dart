@@ -409,13 +409,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   // SECTION 1: STUDENT MANAGEMENT
                   _sectionHeader('STUDENT MANAGEMENT', Icons.people_rounded),
 
-                  _drawerTile(
-                    icon: Icons.person_add_alt_1_rounded,
-                    title: 'Create Student',
-                    onTap: () {
-                      Navigator.pushNamed(context, '/create_student');
-                    },
-                  ),
+                  // _drawerTile(
+                  //   icon: Icons.person_add_alt_1_rounded,
+                  //   title: 'Create Student',
+                  //   onTap: () {
+                  //     Navigator.pushNamed(context, '/create_student');
+                  //   },
+                  // ),
 
                   _drawerTile(
                     icon: Icons.person_add_alt_1_rounded,
@@ -425,6 +425,17 @@ class _DashboardPageState extends State<DashboardPage> {
                         context,
                         '/qr-scan-student-card',
                         arguments: {'type': ScanStudentCard.studentCard},
+                      );
+                    },
+                  ),
+                  _drawerTile(
+                    icon: Icons.person_add_alt_1_rounded,
+                    title: 'Re Assign Student',
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/qr-scan-student-card',
+                        arguments: {'type': ScanStudentCard.assignStudentCard},
                       );
                     },
                   ),
@@ -806,6 +817,18 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                 arguments: {'type': ScanType.attendance},
                               );
+                            },
+                          ),
+
+                          _QuickActionCard(
+                            icon: Icons.assignment_turned_in_sharp,
+
+                            label: 'NEW Attendance',
+
+                            color: AppColors.primary,
+
+                            onTap: () {
+                              Navigator.pushNamed(context, '/attendance-scan');
                             },
                           ),
 

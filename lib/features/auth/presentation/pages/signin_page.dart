@@ -246,9 +246,6 @@ class _SigninPageState extends State<SigninPage> {
                                           if (text.isEmpty) {
                                             return 'Password is required';
                                           }
-                                          if (text.length < 6) {
-                                            return 'Password must be at least 6 characters';
-                                          }
                                           return null;
                                         },
                                       ),

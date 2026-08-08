@@ -29,6 +29,24 @@ final class ReAssignStudentCardLoaded extends StudentCardState {
   List<Object?> get props => [response];
 }
 
+final class SearchStudentForAssignmentLoaded extends StudentCardState {
+  final AssignmentSearchStudentResponseModel response;
+
+  const SearchStudentForAssignmentLoaded(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class AssignStudentCardLoaded extends StudentCardState {
+  final AssignmentCardResponseModel response;
+
+  const AssignStudentCardLoaded(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
 final class StudentCardError extends StudentCardState {
   final String message;
 

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/printer_service.dart';
+import '../../../qr/presentation/bloc/read_student_classes/read_student_classes_bloc.dart';
 import '../../../student_grade/presentation/bloc/student_grade/student_grade_bloc.dart';
 import '../../data/models/admission_dialog_result.dart';
 import '../../data/models/students_model.dart';
@@ -172,6 +173,13 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
                         Navigator.pop(context);
 
                         _clearForm();
+                        if (state.response.student.cardQrCode != null) {
+                          context.read<ReadStudentClassesBloc>().add(
+                            ReadStudentClassesRequested(
+                              qrCode: state.response.student.cardQrCode!,
+                            ),
+                          );
+                        }
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
