@@ -68,3 +68,23 @@ final class ClassRoomStatusToggleError extends ClassRoomState {
   @override
   List<Object?> get props => [message];
 }
+
+final class ClassRoomDeactivateLoading extends ClassRoomState {}
+
+final class ClassRoomDeactivateSuccess extends ClassRoomState {
+  final DeactivateEnrollmentResponseModel response;
+
+  const ClassRoomDeactivateSuccess(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class ClassRoomDeactivateError extends ClassRoomState {
+  final String message;
+
+  const ClassRoomDeactivateError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

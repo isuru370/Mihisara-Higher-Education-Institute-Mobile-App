@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import '../data/datasources/attendance_remote_datasource.dart';
 import '../data/repositories/attendance_repository_impl.dart';
 import '../domain/repositories/attendance_repository.dart';
+import '../domain/usecases/delete_attendance_usecase.dart';
 import '../domain/usecases/get_attendance_history_usecase.dart';
 import '../domain/usecases/get_attendance_report_usecase.dart';
 import '../domain/usecases/mark_attendance_usecase.dart';
@@ -23,6 +24,7 @@ Future<void> initMarkAttendanceDI() async {
   sl.registerLazySingleton(() => MarkAttendanceUseCase(sl()));
   sl.registerLazySingleton(() => GetAttendanceHistoryUseCase(sl()));
   sl.registerLazySingleton(() => GetAttendanceReportUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteAttendanceUsecase(sl()));
 
   // 🔵 BLOC
   sl.registerFactory(
@@ -30,6 +32,7 @@ Future<void> initMarkAttendanceDI() async {
       markAttendanceUseCase: sl(),
       getAttendanceHistoryUseCase: sl(),
       getAttendanceReportUseCase: sl(),
+      deleteAttendanceUsecase: sl(),
     ),
   );
 }

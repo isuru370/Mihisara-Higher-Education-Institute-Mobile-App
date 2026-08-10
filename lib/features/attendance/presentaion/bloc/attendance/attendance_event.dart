@@ -33,3 +33,12 @@ class AttendanceReportRequested extends AttendanceEvent {
   @override
   List<Object?> get props => [scheduleId];
 }
+
+class DeleteAttendanceEvent extends AttendanceEvent {
+  final DeleteAttendanceRequestModel request;
+
+  const DeleteAttendanceEvent({required this.request});
+
+  @override
+  List<Object> get props => [request];
+}

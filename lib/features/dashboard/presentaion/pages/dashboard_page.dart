@@ -20,7 +20,6 @@ class _DashboardPageState extends State<DashboardPage> {
   String? _token;
   UserModel? _user;
   bool _showPrinterBanner = false;
-
   bool _loadingSession = true;
 
   @override
@@ -144,9 +143,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     color: AppColors.primary,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 const Text(
                   'Printer Not Connected',
                   textAlign: TextAlign.center,
@@ -156,9 +153,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     color: AppColors.dark,
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 Text(
                   'No printer is currently connected.\n\n'
                   'Connect your Bluetooth printer now to print payment receipts and reports instantly.',
@@ -169,9 +164,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     fontSize: 14,
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -195,9 +188,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 Row(
                   children: [
                     Expanded(
@@ -213,9 +204,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: const Text('Connect'),
                       ),
                     ),
-
                     const SizedBox(width: 12),
-
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
@@ -250,17 +239,13 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final userName = _user?.name ?? 'Guest User';
-
     final userEmail = _user?.email ?? 'No Email';
-
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
-
         onPressed: () {
           Navigator.pushNamed(
             context,
@@ -268,36 +253,25 @@ class _DashboardPageState extends State<DashboardPage> {
             arguments: {'type': ScanType.student},
           );
         },
-
         icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white),
-
         label: const Text(
           'Search Student',
-
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
         ),
       ),
-
       appBar: AppBar(
         elevation: 0,
-
         backgroundColor: AppColors.primary,
-
         title: const Text(
           'Dashboard',
-
           style: TextStyle(fontWeight: FontWeight.w800, color: Colors.white),
         ),
-
         iconTheme: const IconThemeData(color: Colors.white),
-
         actions: [
           IconButton(
             onPressed: _refreshDashboard,
-
             icon: const Icon(Icons.refresh_rounded),
           ),
-
           IconButton(
             onPressed: () {
               Navigator.pushNamed(context, '/print_test_screen');
@@ -306,19 +280,15 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           IconButton(
             onPressed: () {},
-
             icon: Stack(
               children: [
                 const Icon(Icons.notifications_rounded),
-
                 Positioned(
                   right: 0,
                   top: 0,
-
                   child: Container(
                     width: 10,
                     height: 10,
-
                     decoration: const BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
@@ -328,17 +298,12 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
-
           const SizedBox(width: 8),
         ],
       ),
-
       drawer: Drawer(
         child: Column(
           children: [
-            // =========================
-            // HEADER
-            // =========================
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(
@@ -396,27 +361,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             ),
-
-            // =========================
-            // SCROLLABLE CONTENT (ListView)
-            // =========================
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
                   const SizedBox(height: 8),
-
-                  // SECTION 1: STUDENT MANAGEMENT
                   _sectionHeader('STUDENT MANAGEMENT', Icons.people_rounded),
-
-                  // _drawerTile(
-                  //   icon: Icons.person_add_alt_1_rounded,
-                  //   title: 'Create Student',
-                  //   onTap: () {
-                  //     Navigator.pushNamed(context, '/create_student');
-                  //   },
-                  // ),
-
                   _drawerTile(
                     icon: Icons.person_add_alt_1_rounded,
                     title: 'Register Student',
@@ -439,7 +389,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       );
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.image_outlined,
                     title: 'Capture Image',
@@ -451,7 +400,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       );
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.people_alt_rounded,
                     title: 'Students',
@@ -459,7 +407,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       Navigator.pushNamed(context, '/students');
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.school_rounded,
                     title: 'Student Images',
@@ -471,12 +418,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       );
                     },
                   ),
-
                   const Divider(height: 24, thickness: 1),
-
-                  // SECTION 2: CLASS & ATTENDANCE
                   _sectionHeader('CLASS & ATTENDANCE', Icons.class_rounded),
-
                   _drawerTile(
                     icon: Icons.payments_rounded,
                     title: 'Today Classes',
@@ -484,7 +427,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       Navigator.pushNamed(context, '/today-class');
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.payments_rounded,
                     title: 'Add Class',
@@ -496,7 +438,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       );
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.class_outlined,
                     title: 'Class Schedule',
@@ -504,7 +445,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       Navigator.pushNamed(context, '/class_ongoing');
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.fact_check_rounded,
                     title: 'Attendance',
@@ -516,12 +456,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       );
                     },
                   ),
-
                   const Divider(height: 24, thickness: 1),
-
-                  // SECTION 3: FINANCIAL
                   _sectionHeader('FINANCIAL', Icons.attach_money_rounded),
-
                   _drawerTile(
                     icon: Icons.payments_rounded,
                     title: 'Payment',
@@ -533,7 +469,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       );
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.monetization_on_outlined,
                     title: 'Today Payments',
@@ -541,7 +476,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       Navigator.pushNamed(context, '/today-payment');
                     },
                   ),
-
                   _drawerTile(
                     icon: Icons.monetization_on_outlined,
                     title: 'Admission',
@@ -549,12 +483,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       Navigator.pushNamed(context, '/admission-payment');
                     },
                   ),
-
                   const Divider(height: 24, thickness: 1),
-
-                  // SECTION 4: OTHER
                   _sectionHeader('OTHER', Icons.more_horiz_rounded),
-
                   _drawerTile(
                     icon: Icons.menu_book_rounded,
                     title: 'Student Tute',
@@ -566,15 +496,10 @@ class _DashboardPageState extends State<DashboardPage> {
                       );
                     },
                   ),
-
                   const SizedBox(height: 16),
                 ],
               ),
             ),
-
-            // =========================
-            // FOOTER: LOGOUT (Always at bottom)
-            // =========================
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -589,62 +514,39 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
       ),
-
-      // Helper method for section headers
       body: _loadingSession
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator.adaptive(
               onRefresh: _refreshDashboard,
-
               child: BlocBuilder<MobileDashboardBloc, MobileDashboardState>(
                 builder: (context, state) {
-                  // =========================
-                  // LOADING
-                  // =========================
-
                   if (state is MobileDashboardLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-
-                  // =========================
-                  // ERROR
-                  // =========================
 
                   if (state is MobileDashboardError) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
-
                         child: Container(
                           padding: const EdgeInsets.all(24),
-
                           decoration: BoxDecoration(
                             color: Colors.white,
-
                             borderRadius: BorderRadius.circular(30),
-
                             boxShadow: AppColors.softShadow,
                           ),
-
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-
                             children: [
                               const Icon(
                                 Icons.error_outline_rounded,
-
                                 size: 70,
-
                                 color: AppColors.danger,
                               ),
-
                               const SizedBox(height: 14),
-
                               Text(
                                 state.message,
-
                                 textAlign: TextAlign.center,
-
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -656,10 +558,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     );
                   }
 
-                  // =========================
-                  // EMPTY
-                  // =========================
-
                   if (state is! MobileDashboardLoaded) {
                     return const Center(child: Text('No dashboard data'));
                   }
@@ -668,8 +566,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   return ListView(
                     padding: const EdgeInsets.all(20),
-
                     children: [
+                      // ✅ Printer Banner
                       if (_showPrinterBanner) ...[
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -685,20 +583,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                 color: Colors.orange,
                               ),
                               const SizedBox(width: 12),
-
                               const Expanded(
                                 child: Text(
                                   'Printer not connected. Connect now to print receipts instantly.',
                                 ),
                               ),
-
                               TextButton(
                                 onPressed: () async {
                                   await Navigator.pushNamed(
                                     context,
                                     '/print_test_screen',
                                   );
-
                                   await _checkPrinterStatus();
                                 },
                                 child: const Text('Connect'),
@@ -706,27 +601,101 @@ class _DashboardPageState extends State<DashboardPage> {
                             ],
                           ),
                         ),
-
                         const SizedBox(height: 16),
                       ],
-                      // =========================
-                      // HERO CARD
-                      // =========================
+
+                      // ✅ Available ID Cards Warning Banner - At the top
+                      if (dashboard.availableIdCard <= 10) ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: dashboard.availableIdCard <= 3
+                                ? Colors.red.shade50
+                                : Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: dashboard.availableIdCard <= 3
+                                  ? Colors.red.shade200
+                                  : Colors.orange.shade200,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                dashboard.availableIdCard <= 3
+                                    ? Icons.warning_rounded
+                                    : Icons.info_outline_rounded,
+                                color: dashboard.availableIdCard <= 3
+                                    ? Colors.red.shade700
+                                    : Colors.orange.shade700,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      dashboard.availableIdCard <= 3
+                                          ? '⚠️ Critical: Low ID Cards'
+                                          : '⚠️ Low ID Cards Available',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: dashboard.availableIdCard <= 3
+                                            ? Colors.red.shade700
+                                            : Colors.orange.shade700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Only ${dashboard.availableIdCard} ID card${dashboard.availableIdCard > 1 ? 's' : ''} remaining. '
+                                      'Please order new cards soon.',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: dashboard.availableIdCard <= 3
+                                            ? Colors.red.shade600
+                                            : Colors.orange.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: dashboard.availableIdCard <= 3
+                                      ? Colors.red.shade100
+                                      : Colors.orange.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${dashboard.availableIdCard} left',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: dashboard.availableIdCard <= 3
+                                        ? Colors.red.shade700
+                                        : Colors.orange.shade700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Hero Card
                       _heroCard(
                         userName: userName,
-
                         userEmail: userEmail,
-                        //dashboard.smsBalance.data.currentBalance
                         smsBalance: _money("0.00"),
-
                         tokenActive: _token != null,
                       ),
-
                       const SizedBox(height: 20),
 
-                      // =========================
-                      // MINI STATS
-                      // =========================
+                      // Mini Stats
                       Row(
                         children: [
                           Expanded(
@@ -736,19 +705,14 @@ class _DashboardPageState extends State<DashboardPage> {
                               },
                               child: _miniStat(
                                 title: 'Revenue',
-
                                 value:
                                     'LKR ${_money(dashboard.todayPaymentCollection)}',
-
                                 icon: Icons.payments_rounded,
-
                                 color: AppColors.success,
                               ),
                             ),
                           ),
-
                           const SizedBox(width: 12),
-
                           Expanded(
                             child: InkWell(
                               onTap: () {
@@ -756,173 +720,271 @@ class _DashboardPageState extends State<DashboardPage> {
                               },
                               child: _miniStat(
                                 title: 'Today Classes',
-
                                 value: dashboard.todayClassCount.toString(),
-
                                 icon: Icons.today_rounded,
-
                                 color: AppColors.warning,
                               ),
                             ),
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 24),
 
-                      // =========================
-                      // QUICK ACTIONS
-                      // =========================
+                      // Quick Actions
                       const Text(
                         'Quick Actions',
-
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: AppColors.dark,
                         ),
                       ),
-
                       const SizedBox(height: 18),
-
                       GridView.count(
                         shrinkWrap: true,
-
                         physics: const NeverScrollableScrollPhysics(),
-
                         crossAxisCount: width > 900
                             ? 4
                             : width > 600
                             ? 3
                             : 2,
-
                         crossAxisSpacing: 14,
-
                         mainAxisSpacing: 14,
-
                         childAspectRatio: 1.0,
-
                         children: [
                           _QuickActionCard(
                             icon: Icons.assignment_turned_in_sharp,
-
                             label: 'Attendance',
-
                             color: AppColors.primary,
-
                             onTap: () {
                               Navigator.pushNamed(
                                 context,
                                 '/qr-scan',
-
                                 arguments: {'type': ScanType.attendance},
                               );
                             },
                           ),
-
                           _QuickActionCard(
                             icon: Icons.assignment_turned_in_sharp,
-
                             label: 'NEW Attendance',
-
                             color: AppColors.primary,
-
                             onTap: () {
                               Navigator.pushNamed(context, '/attendance-scan');
                             },
                           ),
-
                           _QuickActionCard(
                             icon: Icons.payments_rounded,
-
                             label: 'Payment',
-
                             color: AppColors.success,
-
                             onTap: () {
                               Navigator.pushNamed(
                                 context,
                                 '/qr-scan',
-
                                 arguments: {'type': ScanType.payment},
                               );
                             },
                           ),
-
                           _QuickActionCard(
                             icon: Icons.class_rounded,
-
                             label: 'Add Class',
-
                             color: AppColors.secondary,
-
                             onTap: () {
                               Navigator.pushNamed(
                                 context,
                                 '/qr-scan',
-
                                 arguments: {'type': ScanType.classes},
                               );
                             },
                           ),
-
                           _QuickActionCard(
                             icon: Icons.menu_book_rounded,
-
                             label: 'Student Tute',
-
                             color: AppColors.info,
-
                             onTap: () {
                               Navigator.pushNamed(
                                 context,
                                 '/qr-scan',
-
                                 arguments: {'type': ScanType.tute},
                               );
                             },
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 24),
 
-                      // =========================
-                      // OVERVIEW
-                      // =========================
+                      // ✅ ID Cards Summary Card - Before Overview
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: dashboard.availableIdCard <= 3
+                              ? Colors.red.shade50
+                              : dashboard.availableIdCard <= 10
+                              ? Colors.orange.shade50
+                              : Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: dashboard.availableIdCard <= 3
+                                ? Colors.red.shade200
+                                : dashboard.availableIdCard <= 10
+                                ? Colors.orange.shade200
+                                : Colors.green.shade200,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: dashboard.availableIdCard <= 3
+                                    ? Colors.red.shade100
+                                    : dashboard.availableIdCard <= 10
+                                    ? Colors.orange.shade100
+                                    : Colors.green.shade100,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                dashboard.availableIdCard <= 3
+                                    ? Icons.credit_card_off_rounded
+                                    : dashboard.availableIdCard <= 10
+                                    ? Icons.credit_card_rounded
+                                    : Icons.credit_card_rounded,
+                                color: dashboard.availableIdCard <= 3
+                                    ? Colors.red.shade700
+                                    : dashboard.availableIdCard <= 10
+                                    ? Colors.orange.shade700
+                                    : Colors.green.shade700,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Available ID Cards',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: dashboard.availableIdCard <= 3
+                                              ? Colors.red.shade700
+                                              : Colors.grey.shade800,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: dashboard.availableIdCard <= 3
+                                              ? Colors.red.shade100
+                                              : dashboard.availableIdCard <= 10
+                                              ? Colors.orange.shade100
+                                              : Colors.green.shade100,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Text(
+                                          dashboard.availableIdCard <= 3
+                                              ? '⚠️ CRITICAL'
+                                              : dashboard.availableIdCard <= 10
+                                              ? '⚠️ LOW'
+                                              : '✅ OK',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: dashboard.availableIdCard <=
+                                                    3
+                                                ? Colors.red.shade700
+                                                : dashboard.availableIdCard <=
+                                                    10
+                                                ? Colors.orange.shade700
+                                                : Colors.green.shade700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dashboard.availableIdCard <= 3
+                                        ? 'Very Low Stock! Please order new cards immediately.'
+                                        : dashboard.availableIdCard <= 10
+                                        ? 'Low Stock. Please order new cards soon.'
+                                        : 'Sufficient stock available.',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: dashboard.availableIdCard <= 3
+                                          ? Colors.red.shade600
+                                          : dashboard.availableIdCard <= 10
+                                          ? Colors.orange.shade600
+                                          : Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: dashboard.availableIdCard <= 3
+                                    ? Colors.red.shade100
+                                    : dashboard.availableIdCard <= 10
+                                    ? Colors.orange.shade100
+                                    : Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Text(
+                                dashboard.availableIdCard.toString(),
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: dashboard.availableIdCard <= 3
+                                      ? Colors.red.shade700
+                                      : dashboard.availableIdCard <= 10
+                                      ? Colors.orange.shade700
+                                      : Colors.green.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Overview
                       const Text(
                         'Overview',
-
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: AppColors.dark,
                         ),
                       ),
-
                       const SizedBox(height: 18),
 
                       GridView.builder(
                         shrinkWrap: true,
-
                         physics: const NeverScrollableScrollPhysics(),
-
                         itemCount: 6,
-
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: width > 900
                               ? 4
                               : width > 600
                               ? 3
                               : 2,
-
                           crossAxisSpacing: 12,
-
                           mainAxisSpacing: 12,
-
                           childAspectRatio: 1.05,
                         ),
-
                         itemBuilder: (context, index) {
                           final items = [
                             (
@@ -931,35 +993,30 @@ class _DashboardPageState extends State<DashboardPage> {
                               Icons.people_alt_rounded,
                               AppColors.primary,
                             ),
-
                             (
                               'Teachers',
                               dashboard.totalTeacher.toString(),
                               Icons.school_rounded,
                               AppColors.info,
                             ),
-
                             (
                               'Classes',
                               dashboard.totalClasses.toString(),
                               Icons.class_rounded,
                               AppColors.success,
                             ),
-
                             (
                               'Today Sessions',
                               dashboard.todayClassCount.toString(),
                               Icons.today_rounded,
                               AppColors.warning,
                             ),
-
                             (
                               'Temporary',
                               dashboard.temporaryStudentCount.toString(),
                               Icons.qr_code_2_rounded,
                               AppColors.danger,
                             ),
-
                             (
                               'Permanent',
                               dashboard.permanentStudentCount.toString(),
@@ -972,11 +1029,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
                           return _StatCard(
                             title: item.$1,
-
                             value: item.$2,
-
                             icon: item.$3,
-
                             color: item.$4,
                           );
                         },
@@ -1012,10 +1066,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // =========================
-  // HERO CARD
-  // =========================
-
   Widget _heroCard({
     required String userName,
     required String userEmail,
@@ -1024,73 +1074,54 @@ class _DashboardPageState extends State<DashboardPage> {
   }) {
     return Container(
       padding: const EdgeInsets.all(28),
-
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xff2563EB), Color(0xff1D4ED8), Color(0xff1E40AF)],
         ),
-
         borderRadius: BorderRadius.circular(34),
-
         boxShadow: [
           BoxShadow(
             color: const Color(0xff2563EB).withOpacity(.25),
-
             blurRadius: 30,
-
             offset: const Offset(0, 14),
           ),
         ],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           Text(
             _getGreeting(),
-
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
-
           const SizedBox(height: 12),
-
           Text(
             userName,
-
             style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(height: 6),
-
           Text(userEmail, style: const TextStyle(color: Colors.white70)),
-
           const SizedBox(height: 18),
-
           Wrap(
             spacing: 10,
             runSpacing: 10,
-
             children: [
               _heroBadge(
                 icon: Icons.verified_user_rounded,
-
                 text: tokenActive ? 'Session Active' : 'No Session',
               ),
-
               _heroBadge(
                 icon: Icons.sms_rounded,
-
                 text: 'SMS Balance: $smsBalance',
               ),
             ],
@@ -1103,26 +1134,18 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _heroBadge({required IconData icon, required String text}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.10),
-
         borderRadius: BorderRadius.circular(16),
-
         border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
-
       child: Row(
         mainAxisSize: MainAxisSize.min,
-
         children: [
           Icon(icon, color: Colors.white, size: 18),
-
           const SizedBox(width: 8),
-
           Text(
             text,
-
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -1141,59 +1164,42 @@ class _DashboardPageState extends State<DashboardPage> {
   }) {
     return Container(
       padding: const EdgeInsets.all(18),
-
       decoration: BoxDecoration(
         color: Colors.white,
-
         borderRadius: BorderRadius.circular(24),
-
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(.04),
-
             blurRadius: 18,
-
             offset: const Offset(0, 8),
           ),
         ],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-
             decoration: BoxDecoration(
               color: color.withOpacity(.10),
-
               borderRadius: BorderRadius.circular(14),
             ),
-
             child: Icon(icon, color: color),
           ),
-
           const SizedBox(height: 14),
-
           Text(
             value,
-
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppColors.dark,
             ),
           ),
-
           const SizedBox(height: 4),
-
           Text(
             title,
-
             style: TextStyle(
               color: Colors.grey.shade600,
-
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1210,18 +1216,13 @@ class _DashboardPageState extends State<DashboardPage> {
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-
       child: ListTile(
         leading: Icon(icon, color: color),
-
         title: Text(
           title,
-
           style: TextStyle(color: color, fontWeight: FontWeight.w600),
         ),
-
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-
         onTap: onTap,
       ),
     );
@@ -1245,42 +1246,29 @@ class _QuickActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-
       child: InkWell(
         onTap: onTap,
-
         borderRadius: BorderRadius.circular(26),
-
         child: Ink(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [color.withOpacity(.12), color.withOpacity(.03)],
             ),
-
             borderRadius: BorderRadius.circular(26),
-
             border: Border.all(color: color.withOpacity(.12)),
           ),
-
           child: Padding(
             padding: const EdgeInsets.all(18),
-
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-
               children: [
                 Icon(icon, color: color, size: 34),
-
                 const SizedBox(height: 14),
-
                 Text(
                   label,
-
                   textAlign: TextAlign.center,
-
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-
                     color: AppColors.dark,
                   ),
                 ),
@@ -1310,75 +1298,50 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-
       decoration: BoxDecoration(
         color: Colors.white,
-
         borderRadius: BorderRadius.circular(20),
-
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
-
             blurRadius: 18,
-
             offset: const Offset(0, 8),
           ),
         ],
-
         border: Border.all(color: Colors.grey.withOpacity(0.08)),
       ),
-
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-
         children: [
           Container(
             width: 46,
             height: 46,
-
             decoration: BoxDecoration(
               color: color.withOpacity(0.12),
-
               shape: BoxShape.circle,
             ),
-
             child: Icon(icon, color: color, size: 24),
           ),
-
           const SizedBox(height: 12),
-
           Text(
             value,
-
             textAlign: TextAlign.center,
-
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-
               color: AppColors.dark,
-
               height: 1.0,
             ),
           ),
-
           const SizedBox(height: 6),
-
           Text(
             title,
-
             textAlign: TextAlign.center,
-
             maxLines: 2,
-
             overflow: TextOverflow.ellipsis,
-
             style: TextStyle(
               fontSize: 13,
-
               fontWeight: FontWeight.w600,
-
               color: Colors.grey.shade600,
             ),
           ),

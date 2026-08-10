@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../student_classes/presentaion/bloc/class_room/class_room_bloc.dart';
 import '../../data/models/attendance_report/attendance_report_response_model.dart';
 import '../../services/pdf_service.dart';
 import '../bloc/attendance/attendance_bloc.dart';
@@ -76,87 +77,241 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           ),
         ],
       ),
-      body: BlocBuilder<AttendanceBloc, AttendanceState>(
-        builder: (context, state) {
-          if (state is AttendanceReportLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Loading attendance report...',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-            );
-          }
+      body: MultiBlocListener(
+        listeners: [
+          // ✅ Listen for ClassRoomBloc deactivation states
+          BlocListener<ClassRoomBloc, ClassRoomState>(
+            listenWhen: (previous, current) {
+              return current is ClassRoomDeactivateLoading ||
+                  current is ClassRoomDeactivateSuccess ||
+                  current is ClassRoomDeactivateError;
+            },
+            listener: (context, state) {
+              if (state is ClassRoomDeactivateLoading) {
+                // Optional: Show loading indicator
+              }
 
-          if (state is AttendanceReportError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error Loading Report',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
+              if (state is ClassRoomDeactivateSuccess) {
+                // ✅ Close any open bottom sheets
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+
+                // ✅ Close any open dialogs
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+
+                // ✅ Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.white),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            state.response.message.isNotEmpty
+                                ? state.response.message
+                                : 'Student removed from class successfully!',
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      state.message,
-                      style: TextStyle(color: Colors.grey[600]),
-                      textAlign: TextAlign.center,
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    duration: const Duration(seconds: 3),
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _fetchAttendanceReport,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                );
+
+                // ✅ Refresh the attendance report
+                _fetchAttendanceReport();
+              }
+
+              if (state is ClassRoomDeactivateError) {
+                // ✅ Show error message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.white),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            state.message.isNotEmpty
+                                ? state.message
+                                : 'Failed to remove student from class',
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            },
+          ),
+
+          // ================================
+          // ATTENDANCE BLOC
+          // ================================
+          BlocListener<AttendanceBloc, AttendanceState>(
+            listenWhen: (previous, current) {
+              return current is AttendanceDeleteLoading ||
+                  current is AttendanceDeleteSuccess ||
+                  current is AttendanceDeleteError;
+            },
+            listener: (context, state) {
+              if (state is AttendanceDeleteSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.white),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            state.response.message.isNotEmpty
+                                ? state.response.message
+                                : 'Attendance deleted successfully!',
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+
+                // Refresh report
+                _fetchAttendanceReport();
+              }
+
+              if (state is AttendanceDeleteError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.white),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            state.message.isNotEmpty
+                                ? state.message
+                                : 'Failed to delete attendance.',
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<AttendanceBloc, AttendanceState>(
+          builder: (context, state) {
+            if (state is AttendanceReportLoading) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primary,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading attendance report...',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (state is AttendanceReportError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error Loading Report',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[800],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        state.message,
+                        style: TextStyle(color: Colors.grey[600]),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _fetchAttendanceReport,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-          if (state is AttendanceReportLoaded) {
-            _reportData = state.response;
-            return _buildContent(state.response);
-          }
+            if (state is AttendanceReportLoaded) {
+              _reportData = state.response;
+              return _buildContent(state.response);
+            }
 
-          return const SizedBox();
-        },
+            return const SizedBox();
+          },
+        ),
       ),
     );
   }
 
   Widget _buildContent(AttendanceReportResponseModel data) {
-    // Filter students into present and absent
     final presentStudents = data.data.students
         .where((s) => s.attendance.isPresent)
         .toList();
@@ -165,13 +320,11 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
         .where((s) => !s.attendance.isPresent)
         .toList();
 
-    // Sort present students - paid first
     presentStudents.sort((a, b) {
       if (a.payment.isPaid == b.payment.isPaid) return 0;
       return a.payment.isPaid ? -1 : 1;
     });
 
-    // Sort absent students - paid first
     absentStudents.sort((a, b) {
       if (a.payment.isPaid == b.payment.isPaid) return 0;
       return a.payment.isPaid ? -1 : 1;
@@ -179,15 +332,10 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
     return CustomScrollView(
       slivers: [
-        // Header Section
         SliverToBoxAdapter(child: _buildHeaderSection(data)),
-
-        // Summary Section
         SliverToBoxAdapter(
           child: AttendanceSummaryCard(summary: data.data.summary),
         ),
-
-        // Present Students Section
         if (presentStudents.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _buildSectionTitle(
@@ -199,14 +347,13 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           SliverList(
             delegate: SliverChildBuilderDelegate((context, index) {
               return StudentAttendanceCard(
+                key: ValueKey(presentStudents[index].student.id),
                 student: presentStudents[index],
                 index: index,
               );
             }, childCount: presentStudents.length),
           ),
         ],
-
-        // Absent Students Section
         if (absentStudents.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _buildSectionTitle(
@@ -218,13 +365,13 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           SliverList(
             delegate: SliverChildBuilderDelegate((context, index) {
               return StudentAttendanceCard(
+                key: ValueKey(absentStudents[index].student.id),
                 student: absentStudents[index],
                 index: index,
               );
             }, childCount: absentStudents.length),
           ),
         ],
-
         const SliverToBoxAdapter(child: SizedBox(height: 80)),
       ],
     );
@@ -288,7 +435,6 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Class Info Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -439,7 +585,6 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Selection Prompt
               Row(
                 children: [
                   Container(

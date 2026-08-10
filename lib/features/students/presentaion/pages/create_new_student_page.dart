@@ -23,6 +23,7 @@ class CreateNewStudentPage extends StatefulWidget {
 class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
   final PrinterService _printerService = PrinterService();
   final _formKey = GlobalKey<FormState>();
+  final _scrollController = ScrollController();
 
   final _cardQrCodeController = TextEditingController();
   final _quickImageIdController = TextEditingController();
@@ -45,6 +46,7 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _cardQrCodeController.dispose();
     _quickImageIdController.dispose();
     _lnameController.dispose();
@@ -118,444 +120,468 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<StudentsBloc, StudentsState>(
-      listener: (context, state) {
-        if (state is StudentsLoading) {
-          setState(() {
-            _isLoading = true;
-          });
-        } else if (state is StudentsCreated) {
-          setState(() {
-            _isLoading = false;
-          });
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ReadStudentClassesBloc, ReadStudentClassesState>(
+          listener: (context, state) async {
+            if (state is ReadStudentClassesSuccess) {
+              if (!mounted) return;
 
-          final payment = state.response.admissionPayment;
+              await Navigator.pushReplacementNamed(
+                context,
+                '/add-student-class',
+                arguments: state.response,
+              );
+            }
 
-          if (payment != null) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) {
-                return AlertDialog(
-                  title: const Text('Admission Receipt'),
+            if (state is ReadStudentClassesError) {
+              setState(() {
+                _isLoading = false;
+              });
 
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Receipt No : ${payment.receiptNumber}'),
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.danger,
+                ),
+              );
+            }
+          },
+        ),
+      ],
+      child: BlocConsumer<StudentsBloc, StudentsState>(
+        listener: (context, state) {
+          if (state is StudentsLoading) {
+            setState(() {
+              _isLoading = true;
+            });
+          } else if (state is StudentsCreated) {
+            setState(() {
+              _isLoading = false;
+            });
 
-                      const SizedBox(height: 8),
+            // ✅ Use widget.qrCode instead of state.response.student.cardQrCode
+            final qrCode = widget.qrCode;
 
-                      Text('Student ID : ${state.response.student.customId}'),
+            final payment = state.response.admissionPayment;
 
-                      const SizedBox(height: 8),
-
-                      Text('Admission : ${payment.admissionName}'),
-
-                      const SizedBox(height: 8),
-
-                      Text('Amount : Rs.${payment.amount}'),
-
-                      const SizedBox(height: 8),
-
-                      Text('Method : ${payment.paymentMethod}'),
-
-                      const SizedBox(height: 8),
-
-                      Text('Status : ${payment.status}'),
-                    ],
-                  ),
-
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-
-                        _clearForm();
-                        if (state.response.student.cardQrCode != null) {
-                          context.read<ReadStudentClassesBloc>().add(
-                            ReadStudentClassesRequested(
-                              qrCode: state.response.student.cardQrCode!,
-                            ),
-                          );
-                        }
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: AppColors.success,
-                            content: Text(
-                              'Student registered successfully (ID: ${state.response.student.customId})',
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text('Close'),
+            if (payment != null) {
+              // ✅ Case 1: Payment exists - Show receipt dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) {
+                  return AlertDialog(
+                    title: const Text('Admission Receipt'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Receipt No : ${payment.receiptNumber}'),
+                        const SizedBox(height: 8),
+                        Text('Student ID : ${state.response.student.customId}'),
+                        const SizedBox(height: 8),
+                        Text('Admission : ${payment.admissionName}'),
+                        const SizedBox(height: 8),
+                        Text('Amount : Rs.${payment.amount}'),
+                        const SizedBox(height: 8),
+                        Text('Method : ${payment.paymentMethod}'),
+                        const SizedBox(height: 8),
+                        Text('Status : ${payment.status}'),
+                      ],
                     ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _openStudentClasses(qrCode);
+                        },
+                        child: const Text('Continue to Classes'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          try {
+                            await AdmissionReceiptPrint.printReceipt(
+                              printerService: _printerService,
+                              instituteName: 'Mihisara Education Institute',
+                              receiptNumber: payment.receiptNumber,
+                              studentName: state.response.student.initialName,
+                              studentId: state.response.student.customId
+                                  .toString(),
+                              admissionName: payment.admissionName,
+                              amount: double.parse(payment.amount),
+                              paymentMethod: payment.paymentMethod,
+                              paidAt: payment.paidAt,
+                            );
 
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        try {
-                          await AdmissionReceiptPrint.printReceipt(
-                            printerService: _printerService,
+                            if (!mounted) return;
 
-                            instituteName: 'Mihisara Education Institute',
-
-                            receiptNumber: payment.receiptNumber,
-
-                            studentName: state.response.student.initialName,
-
-                            studentId: state.response.student.customId
-                                .toString(),
-
-                            admissionName: payment.admissionName,
-
-                            amount: double.parse(payment.amount),
-
-                            paymentMethod: payment.paymentMethod,
-
-                            paidAt: payment.paidAt,
-                          );
-
-                          if (context.mounted) {
                             Navigator.pop(context);
-
-                            _clearForm();
+                            _openStudentClasses(qrCode);
+                          } catch (e) {
+                            if (!mounted) return;
 
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Receipt printed successfully'),
+                              SnackBar(
+                                content: Text('Print failed: $e'),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Print failed: $e')),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.print),
-                      label: const Text('Print'),
-                    ),
-                  ],
-                );
-              },
-            );
-          } else {
-            _clearForm();
+                        },
+                        icon: const Icon(Icons.print),
+                        label: const Text('Print'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else {
+              // ✅ Case 2: No payment - Direct navigation
+              _openStudentClasses(qrCode);
+            }
+          } else if (state is StudentsError) {
+            setState(() {
+              _isLoading = false;
+            });
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                backgroundColor: AppColors.success,
-                content: Text(
-                  'Student registered successfully (ID: ${state.response.student.customId})',
-                ),
+                backgroundColor: AppColors.danger,
+                content: Text(state.message),
               ),
             );
           }
-        } else if (state is StudentsError) {
-          setState(() {
-            _isLoading = false;
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: AppColors.danger,
-              content: Text(state.message),
+        },
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              elevation: 0,
+              centerTitle: true,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              title: const Text(
+                'New Student Registration',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
-          );
-        }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            elevation: 0,
-            centerTitle: true,
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            title: const Text(
-              'New Student Registration',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          body: Stack(
-            children: [
-              Form(
-                key: _formKey,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 120),
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(26),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.heroGradient,
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: AppColors.largeShadow,
-                      ),
-                      child: Row(
+            body: Stack(
+              children: [
+                // ✅ Main Content with ScrollView
+                GestureDetector(
+                  onTap: () {
+                    // Close keyboard when tapping outside
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 140),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            width: 68,
-                            height: 68,
+                            padding: const EdgeInsets.all(26),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(.14),
-                              borderRadius: BorderRadius.circular(22),
+                              gradient: AppColors.heroGradient,
+                              borderRadius: BorderRadius.circular(32),
+                              boxShadow: AppColors.largeShadow,
                             ),
-                            child: const Icon(
-                              Icons.person_add_alt_1_rounded,
-                              color: Colors.white,
-                              size: 34,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 68,
+                                  height: 68,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(.14),
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    color: Colors.white,
+                                    size: 34,
+                                  ),
+                                ),
+                                const SizedBox(width: 18),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Student Registration',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Register and manage student records easily',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(.82),
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 18),
-                          Expanded(
+                          const SizedBox(height: 22),
+                          Container(
+                            padding: const EdgeInsets.all(22),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: AppColors.softShadow,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Student Registration',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w800,
+                                const SizedBox(height: 18),
+
+                                _buildTextField(
+                                  controller: _cardQrCodeController,
+                                  label: 'Student Card QR Code',
+                                  icon: Icons.credit_card_rounded,
+                                  readOnly: true,
+                                ),
+
+                                const SizedBox(height: 18),
+
+                                _buildTextField(
+                                  controller: _quickImageIdController,
+                                  label: 'QuickImage Id',
+                                  icon: Icons.image_rounded,
+                                  requiredField: false,
+                                  customValidator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return null;
+                                    }
+
+                                    final regex = RegExp(r'^QP-\d{3}$');
+                                    if (!regex.hasMatch(value.trim())) {
+                                      return 'Use format like QP-001';
+                                    }
+
+                                    return null;
+                                  },
+                                ),
+
+                                const SizedBox(height: 14),
+
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: _isLoading
+                                        ? null
+                                        : _openImageCapture,
+                                    icon: const Icon(Icons.add_a_photo_rounded),
+                                    label: const Text('Add Image'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppColors.primary,
+                                      side: const BorderSide(
+                                        color: AppColors.primary,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Register and manage student records easily',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(.82),
-                                    height: 1.4,
-                                  ),
+
+                                const SizedBox(height: 18),
+
+                                _buildTextField(
+                                  controller: _lnameController,
+                                  label: 'Initial Name',
+                                  icon: Icons.badge_rounded,
                                 ),
+
+                                const SizedBox(height: 18),
+
+                                DropdownButtonFormField<String>(
+                                  initialValue: _selectedGender,
+                                  decoration: _inputDecoration(
+                                    label: 'Gender',
+                                    icon: Icons.wc_rounded,
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'male',
+                                      child: Text('Male'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'female',
+                                      child: Text('Female'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'other',
+                                      child: Text('Other'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      _selectedGender = value;
+                                    });
+                                  },
+                                ),
+
+                                const SizedBox(height: 18),
+
+                                _buildTextField(
+                                  controller: _guardianMobileController,
+                                  label: 'Guardian Mobile',
+                                  icon: Icons.phone_rounded,
+                                  keyboardType: TextInputType.phone,
+                                ),
+
+                                const SizedBox(height: 18),
+
+                                BlocBuilder<
+                                  StudentGradeBloc,
+                                  StudentGradeState
+                                >(
+                                  builder: (context, state) {
+                                    if (state is StudentGradeLoading) {
+                                      return const Padding(
+                                        padding: EdgeInsets.all(18),
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+                                    }
+
+                                    if (state is StudentGradeLoaded) {
+                                      return DropdownButtonFormField<int>(
+                                        initialValue: _selectedGradeId,
+                                        decoration: _inputDecoration(
+                                          label: 'Select Grade',
+                                          icon: Icons.class_rounded,
+                                        ),
+                                        items: state.grades.map((g) {
+                                          return DropdownMenuItem(
+                                            value: g.gradeId,
+                                            child: Text('Grade ${g.gradeName}'),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _selectedGradeId = value;
+                                          });
+                                        },
+                                        validator: (value) {
+                                          if (value == null) {
+                                            return 'Please select grade';
+                                          }
+                                          return null;
+                                        },
+                                      );
+                                    }
+
+                                    if (state is StudentGradeError) {
+                                      return Text(
+                                        state.message,
+                                        style: const TextStyle(
+                                          color: AppColors.danger,
+                                        ),
+                                      );
+                                    }
+
+                                    return const SizedBox();
+                                  },
+                                ),
+
+                                // ✅ Extra bottom space for keyboard
+                                const SizedBox(height: 20),
                               ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 22),
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: AppColors.softShadow,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 18),
+                  ),
+                ),
 
-                          _buildTextField(
-                            controller: _cardQrCodeController,
-                            label: 'Student Card QR Code',
-                            icon: Icons.credit_card_rounded,
-                            readOnly: true,
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          _buildTextField(
-                            controller: _quickImageIdController,
-                            label: 'QuickImage Id',
-                            icon: Icons.image_rounded,
-                            requiredField: false,
-                            customValidator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return null;
-                              }
-
-                              final regex = RegExp(r'^QP-\d{3}$');
-                              if (!regex.hasMatch(value.trim())) {
-                                return 'Use format like QP-001';
-                              }
-
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: _isLoading ? null : _openImageCapture,
-                              icon: const Icon(Icons.add_a_photo_rounded),
-                              label: const Text('Add Image'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                side: const BorderSide(
-                                  color: AppColors.primary,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          _buildTextField(
-                            controller: _lnameController,
-                            label: 'Initial Name',
-                            icon: Icons.badge_rounded,
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedGender,
-                            decoration: _inputDecoration(
-                              label: 'Gender',
-                              icon: Icons.wc_rounded,
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'male',
-                                child: Text('Male'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'female',
-                                child: Text('Female'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'other',
-                                child: Text('Other'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() {
-                                _selectedGender = value;
-                              });
-                            },
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          _buildTextField(
-                            controller: _guardianMobileController,
-                            label: 'Guardian Mobile',
-                            icon: Icons.phone_rounded,
-                            keyboardType: TextInputType.phone,
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          BlocBuilder<StudentGradeBloc, StudentGradeState>(
-                            builder: (context, state) {
-                              if (state is StudentGradeLoading) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(18),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              }
-
-                              if (state is StudentGradeLoaded) {
-                                return DropdownButtonFormField<int>(
-                                  initialValue: _selectedGradeId,
-                                  decoration: _inputDecoration(
-                                    label: 'Select Grade',
-                                    icon: Icons.class_rounded,
-                                  ),
-                                  items: state.grades.map((g) {
-                                    return DropdownMenuItem(
-                                      value: g.gradeId,
-                                      child: Text('Grade ${g.gradeName}'),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedGradeId = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return 'Please select grade';
-                                    }
-                                    return null;
-                                  },
-                                );
-                              }
-
-                              if (state is StudentGradeError) {
-                                return Text(
-                                  state.message,
-                                  style: const TextStyle(
-                                    color: AppColors.danger,
-                                  ),
-                                );
-                              }
-
-                              return const SizedBox();
-                            },
-                          ),
-                        ],
+                // ✅ Fixed Bottom Button
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              Positioned(
-                bottom: 18,
-                left: 18,
-                right: 18,
-                child: SafeArea(
-                  child: SizedBox(
-                    height: 60,
-                    child: ElevatedButton.icon(
-                      onPressed: _isLoading ? null : _showAdmissionDialog,
-                      icon: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.save_rounded),
-                      label: Text(
-                        _isLoading
-                            ? 'Registering Student...'
-                            : 'Register with Card',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    child: SafeArea(
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: _isLoading ? null : _showAdmissionDialog,
+                          icon: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save_rounded),
+                          label: Text(
+                            _isLoading
+                                ? 'Registering Student...'
+                                : 'Register with Card',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              if (_isLoading)
-                Container(
-                  color: Colors.black.withOpacity(.25),
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-            ],
-          ),
-        );
-      },
+                // ✅ Loading Overlay
+                if (_isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(.25),
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -574,6 +600,18 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
       keyboardType: keyboardType,
       textCapitalization: TextCapitalization.words,
       readOnly: readOnly,
+      onTap: () {
+        // ✅ Scroll to the field when tapped
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      },
       onChanged: (value) {
         if (label == 'Initial Name') {
           final capitalized = value
@@ -621,7 +659,7 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
       prefixText: prefixText,
       filled: true,
       fillColor: AppColors.background,
-      prefixIcon: icon != null ? Icon(icon) : null,
+      prefixIcon: icon != null ? Icon(icon, color: Colors.grey[600]) : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide.none,
@@ -638,16 +676,19 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
     );
   }
 
-  void _clearForm() {
-    _cardQrCodeController.clear();
-    _lnameController.clear();
-    _guardianMobileController.clear();
-    _quickImageIdController.clear();
+  void _openStudentClasses(String qrCode) {
+    if (qrCode.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Student QR code not found'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
 
-    setState(() {
-      _selectedGradeId = null;
-      _selectedAdmissionId = null;
-      _selectedGender = 'male';
-    });
+    context.read<ReadStudentClassesBloc>().add(
+      ReadStudentClassesRequested(qrCode: qrCode),
+    );
   }
 }

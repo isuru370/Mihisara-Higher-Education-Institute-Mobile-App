@@ -11,6 +11,8 @@ import '../models/attendance_history/attendance_history_response_model.dart';
 import '../models/attendance_report/attendance_report_request_model.dart';
 import '../models/attendance_report/attendance_report_response_model.dart';
 import '../models/attendance_response_model.dart';
+import '../models/delete_attendance/delete_attendance_request_model.dart';
+import '../models/delete_attendance/delete_attendance_response_model.dart';
 
 class AttendanceRemoteDataSource {
   Future<AttendanceResponseModel> markAttendance({
@@ -128,6 +130,43 @@ class AttendanceRemoteDataSource {
       throw Exception('Network error: ${e.message}');
     } catch (e) {
       throw Exception(e.toString());
+    }
+  }
+
+  Future<DeleteAttendanceResponseModel> deleteAttendance({
+    required DeleteAttendanceRequestModel request,
+  }) async {
+    final token = await SessionStorage.getToken();
+
+    try {
+      final url =
+          '${ApiConstants.apiUrl}/student-attendances/${request.attendanceId}';
+
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: ApiConstants.headers(token: token),
+      );
+
+      debugPrint('DELETE ATTENDANCE STATUS: ${response.statusCode}');
+      debugPrint('DELETE ATTENDANCE RESPONSE: ${response.body}');
+
+      final decoded = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return DeleteAttendanceResponseModel.fromJson(
+          decoded as Map<String, dynamic>,
+        );
+      } else {
+        throw Exception(
+          decoded['message']?.toString() ??
+              'Failed to delete attendance. '
+                  'Status: ${response.statusCode}',
+        );
+      }
+    } catch (e, s) {
+      debugPrint('DELETE ATTENDANCE ERROR: $e');
+      debugPrint('STACKTRACE: $s');
+      rethrow;
     }
   }
 }

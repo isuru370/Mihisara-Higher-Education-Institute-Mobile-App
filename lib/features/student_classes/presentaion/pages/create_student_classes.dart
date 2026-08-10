@@ -1179,6 +1179,15 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            IconButton(
+              tooltip: 'Refresh',
+              icon: const Icon(Icons.qr_code_2_sharp),
+              onPressed: () {
+                Navigator.pushNamed(context, '/attendance-scan');
+              },
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _showViewClassesSheet,

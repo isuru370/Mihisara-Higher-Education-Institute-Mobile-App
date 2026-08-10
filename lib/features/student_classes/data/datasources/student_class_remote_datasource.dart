@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/storage/session_storage.dart';
+import '../models/deactivate_enrollment/deactivate_enrollment_request_model.dart';
+import '../models/deactivate_enrollment/deactivate_enrollment_response_model.dart';
 import '../models/get_class_with_grade_model/get_classes_by_grade_request_model.dart';
 import '../models/get_class_with_grade_model/get_classes_by_grade_response_model.dart';
 import '../models/store_student_class_enrollment/create_student_request_class_model.dart';
@@ -116,6 +118,43 @@ class StudentClassRemoteDatasource {
       }
     } catch (e, s) {
       debugPrint('TOGGLE CLASS STATUS ERROR: $e');
+      debugPrint('STACKTRACE: $s');
+      rethrow;
+    }
+  }
+
+  Future<DeactivateEnrollmentResponseModel> deactivateEnrollment({
+    required DeactivateEnrollmentRequestModel request,
+  }) async {
+    final token = await SessionStorage.getToken();
+
+    try {
+      final url =
+          '${ApiConstants.apiUrl}/student-class-enrollments/${request.enrollmentId}/deactivate';
+
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: ApiConstants.headers(token: token),
+      );
+
+      debugPrint('STATUS CODE: ${response.statusCode}');
+      debugPrint('RESPONSE BODY: ${response.body}');
+
+      final decoded = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return DeactivateEnrollmentResponseModel.fromJson(
+          decoded as Map<String, dynamic>,
+        );
+      } else {
+        throw Exception(
+          decoded['message']?.toString() ??
+              'Failed to deactivate enrollment. '
+                  'Status: ${response.statusCode}',
+        );
+      }
+    } catch (e, s) {
+      debugPrint('DEACTIVATE ENROLLMENT ERROR: $e');
       debugPrint('STACKTRACE: $s');
       rethrow;
     }

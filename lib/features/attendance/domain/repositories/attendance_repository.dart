@@ -4,6 +4,8 @@ import '../../data/models/attendance_history/attendance_history_response_model.d
 import '../../data/models/attendance_report/attendance_report_request_model.dart';
 import '../../data/models/attendance_report/attendance_report_response_model.dart';
 import '../../data/models/attendance_response_model.dart';
+import '../../data/models/delete_attendance/delete_attendance_request_model.dart';
+import '../../data/models/delete_attendance/delete_attendance_response_model.dart';
 
 abstract class AttendanceRepository {
   Future<AttendanceResponseModel> markAttendance({
@@ -15,4 +17,7 @@ abstract class AttendanceRepository {
   Future<AttendanceReportResponseModel> getAttendanceReport({
     required AttendanceReportRequestModel request,
   });
+  Future<DeleteAttendanceResponseModel> deleteAttendance({
+  required DeleteAttendanceRequestModel request,
+});
 }

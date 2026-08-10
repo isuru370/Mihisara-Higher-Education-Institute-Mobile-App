@@ -1,12 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nexorait_education_app/features/student_classes/data/models/deactivate_enrollment/deactivate_enrollment_request_model.dart';
 
+import '../../../data/models/deactivate_enrollment/deactivate_enrollment_response_model.dart';
 import '../../../data/models/get_class_with_grade_model/get_classes_by_grade_response_model.dart';
 import '../../../data/models/store_student_class_enrollment/create_student_request_class_model.dart';
 import '../../../data/models/store_student_class_enrollment/create_student_response_class_model.dart';
 import '../../../data/models/student_class_enrollment_status_change_model/class_status_request_model.dart';
 import '../../../data/models/student_class_enrollment_status_change_model/class_status_response_model.dart';
 import '../../../domain/usecase/create_student_class_enrollment_usecase.dart';
+import '../../../domain/usecase/deactivate_enrollment_usecase.dart';
 import '../../../domain/usecase/get_classes_by_grade_usecase.dart';
 import '../../../domain/usecase/toggle_class_status_usecase.dart';
 
@@ -16,20 +19,20 @@ part 'class_room_state.dart';
 class ClassRoomBloc extends Bloc<ClassRoomEvent, ClassRoomState> {
   final GetClassesByGradeUseCase getClassesByGradeUsecase;
   final CreateStudentClassEnrollmentUseCase createStudentClassEnrollmentUsecase;
+  final DeactivateEnrollmentUsecase deactivateEnrollmentUsecase;
   final ToggleClassStatusUseCase toggleClassStatusUseCase;
 
   ClassRoomBloc({
     required this.getClassesByGradeUsecase,
     required this.createStudentClassEnrollmentUsecase,
+    required this.deactivateEnrollmentUsecase,
     required this.toggleClassStatusUseCase,
   }) : super(ClassRoomInitial()) {
     on<LoadClassesByGradeEvent>((event, emit) async {
       emit(ClassRoomLoading());
 
       try {
-        final result = await getClassesByGradeUsecase(
-          gradeId: event.gradeId,
-        );
+        final result = await getClassesByGradeUsecase(gradeId: event.gradeId);
 
         emit(ClassRoomLoaded(result));
       } catch (e) {
@@ -72,6 +75,23 @@ class ClassRoomBloc extends Bloc<ClassRoomEvent, ClassRoomState> {
         }
       } catch (e) {
         emit(ClassRoomStatusToggleError(e.toString()));
+      }
+    });
+    on<DeactivateEnrollmentEvent>((event, emit) async {
+      emit(ClassRoomDeactivateLoading());
+
+      try {
+        final result = await deactivateEnrollmentUsecase(
+          enrollmentId: event.request.enrollmentId,
+        );
+
+        if (result.success) {
+          emit(ClassRoomDeactivateSuccess(result));
+        } else {
+          emit(ClassRoomDeactivateError(result.message));
+        }
+      } catch (e) {
+        emit(ClassRoomDeactivateError(e.toString()));
       }
     });
   }

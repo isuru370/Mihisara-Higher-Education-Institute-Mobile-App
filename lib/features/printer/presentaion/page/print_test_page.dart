@@ -1,5 +1,6 @@
+import 'dart:developer'; // ✅ log() සඳහා import එක add කරන්න
+
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_thermal_printer/utils/printer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -30,22 +31,21 @@ class _PrintTestPageState extends State<PrintTestPage> {
     return e.toString().toLowerCase().contains('bluetooth is turned off');
   }
 
-  Future<bool> _checkBluetoothEnabled() async {
-    try {
-      final state = await FlutterBluePlus.adapterState.first;
-
-      return state == BluetoothAdapterState.on;
-    } catch (e) {
-      return false;
-    }
-  }
-
+  // ✅ සරල Bluetooth permissions request - Location එකත් සමඟ request කරන්න එපා
   Future<void> _requestBluetoothPermissions() async {
-    await [
+    final statuses = await [
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
-      Permission.location,
     ].request();
+
+    final scanGranted = statuses[Permission.bluetoothScan]?.isGranted ?? false;
+
+    final connectGranted =
+        statuses[Permission.bluetoothConnect]?.isGranted ?? false;
+
+    if (!scanGranted || !connectGranted) {
+      log('Bluetooth permissions not granted');
+    }
   }
 
   void _showSnack(String message) {
@@ -56,24 +56,44 @@ class _PrintTestPageState extends State<PrintTestPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  String _printerConnectionType(Printer printer) {
+    switch (printer.connectionType) {
+      case ConnectionType.BLE:
+        return 'Bluetooth';
+      case ConnectionType.USB:
+        return 'USB';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  // ✅ Printer එකම printer එකද කියලා check කරන්න - connection type අනුව
+  bool _isSamePrinter(Printer a, Printer b) {
+    if (a.connectionType != b.connectionType) {
+      return false;
+    }
+
+    if (a.connectionType == ConnectionType.BLE) {
+      return a.address == b.address;
+    }
+
+    // USB සඳහා vendorId + productId භාවිතා කරන්න
+    // එකම vendor/product ID තියෙන USB printers කිහිපයක් තිබුණොත්
+    // ඒවා වෙනස් කර හඳුනාගැනීමට අමතරව device path එකත් use කරන්න පුළුවන්
+    return a.vendorId == b.vendorId && a.productId == b.productId;
+  }
+
   Future<void> _scanPrinters() async {
     setState(() {
       _isScanning = true;
-
       _status = 'Scanning for printers...';
-
       _printers = [];
-
       _selectedPrinter = null;
     });
 
     try {
+      // ✅ Bluetooth permission request කරන්න (USB සඳහා block නොවේ)
       await _requestBluetoothPermissions();
-      final isBluetoothOn = await _checkBluetoothEnabled();
-
-      if (!isBluetoothOn) {
-        throw Exception('Bluetooth is OFF. Please enable Bluetooth.');
-      }
 
       final printers = await _printerService.getAvailablePrinters();
 
@@ -90,14 +110,17 @@ class _PrintTestPageState extends State<PrintTestPage> {
           _selectedPrinter = printers.first;
         }
       });
-    } catch (e) {
+    } catch (e, st) {
+      // ✅ log() දැන් හොඳට වැඩ කරයි (dart:developer import කරලා)
+      log('Printer scan failed: $e', stackTrace: st);
+
       if (!mounted) return;
 
       setState(() {
-        _status = e.toString();
+        _status = 'Scan failed';
       });
 
-      _showSnack(e.toString());
+      _showSnack('Printer scan failed: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -318,7 +341,7 @@ class _PrintTestPageState extends State<PrintTestPage> {
 
                       children: [
                         const Text(
-                          'Bluetooth Printer',
+                          'Thermal Printer', // ✅ Bluetooth වෙනුවට Thermal
 
                           style: TextStyle(
                             color: Colors.white70,
@@ -500,7 +523,10 @@ class _PrintTestPageState extends State<PrintTestPage> {
                   child: _actionButton(
                     label: 'Connect',
 
-                    icon: Icons.bluetooth_connected_rounded,
+                    // ✅ USB icon එක selected printer එක අනුව
+                    icon: _selectedPrinter?.connectionType == ConnectionType.USB
+                        ? Icons.usb_rounded
+                        : Icons.bluetooth_connected_rounded,
 
                     loading: _isConnecting,
 
@@ -595,7 +621,8 @@ class _PrintTestPageState extends State<PrintTestPage> {
                     const SizedBox(height: 8),
 
                     Text(
-                      'Tap scan to search Bluetooth printers',
+                      // ✅ Bluetooth + USB දෙකම mention කරන්න
+                      'Tap scan to search Bluetooth and USB printers',
 
                       textAlign: TextAlign.center,
 
@@ -606,7 +633,10 @@ class _PrintTestPageState extends State<PrintTestPage> {
               )
             else
               ..._printers.map((printer) {
-                final isSelected = printer.address == _selectedPrinter?.address;
+                // ✅ _isSamePrinter() use කරලා හරියට check කරන්න
+                final isSelected =
+                    _selectedPrinter != null &&
+                    _isSamePrinter(printer, _selectedPrinter!);
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 14),
@@ -654,8 +684,11 @@ class _PrintTestPageState extends State<PrintTestPage> {
 
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4),
-
-                      child: Text(printer.address ?? '-'),
+                      child: Text(
+                        // ✅ Connection type එකත් එක්ක address එක පෙන්වන්න
+                        '${_printerConnectionType(printer)}'
+                        ' • ${printer.address ?? 'USB Device'}',
+                      ),
                     ),
 
                     trailing: isSelected

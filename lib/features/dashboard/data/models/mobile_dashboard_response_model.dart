@@ -11,9 +11,7 @@ class MobileDashboardResponseModel {
     required this.data,
   });
 
-  factory MobileDashboardResponseModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory MobileDashboardResponseModel.fromJson(Map<String, dynamic> json) {
     return MobileDashboardResponseModel(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
@@ -35,9 +33,9 @@ class MobileDashboardData {
   final int currentMonthAdmissionCount;
   final int temporaryStudentCount;
   final int permanentStudentCount;
+  final int availableIdCard;
 
-  final List<CurrentMonthAdmissionModel>
-      currentMonthAdmissions;
+  final List<CurrentMonthAdmissionModel> currentMonthAdmissions;
 
   MobileDashboardData({
     required this.smsBalance,
@@ -50,49 +48,34 @@ class MobileDashboardData {
     required this.temporaryStudentCount,
     required this.permanentStudentCount,
     required this.currentMonthAdmissions,
+    required this.availableIdCard,
   });
 
-  factory MobileDashboardData.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory MobileDashboardData.fromJson(Map<String, dynamic> json) {
     return MobileDashboardData(
-      smsBalance: SmsBalanceModel.fromJson(
-        json['sms_balance'] ?? {},
-      ),
+      smsBalance: SmsBalanceModel.fromJson(json['sms_balance'] ?? {}),
 
-      totalStudent:
-          json['total_student'] ?? 0,
+      totalStudent: json['total_student'] ?? 0,
 
-      totalTeacher:
-          json['total_teacher'] ?? 0,
+      totalTeacher: json['total_teacher'] ?? 0,
 
-      totalClasses:
-          json['total_classes'] ?? 0,
+      totalClasses: json['total_classes'] ?? 0,
 
-      todayClassCount:
-          json['today_class_count'] ?? 0,
+      todayClassCount: json['today_class_count'] ?? 0,
 
-      todayPaymentCollection:
-          json['today_payment_collection'],
+      todayPaymentCollection: json['today_payment_collection'],
 
-      currentMonthAdmissionCount:
-          json['current_month_admission_count'] ?? 0,
+      currentMonthAdmissionCount: json['current_month_admission_count'] ?? 0,
 
-      temporaryStudentCount:
-          json['temporary_student_count'] ?? 0,
+      temporaryStudentCount: json['temporary_student_count'] ?? 0,
 
-      permanentStudentCount:
-          json['permanent_student_count'] ?? 0,
+      permanentStudentCount: json['permanent_student_count'] ?? 0,
+
+      availableIdCard: json['available_id_card'] ?? 0,
 
       currentMonthAdmissions:
-          (json['current_month_admissions']
-                      as List<dynamic>? ??
-                  [])
-              .map(
-                (e) =>
-                    CurrentMonthAdmissionModel
-                        .fromJson(e),
-              )
+          (json['current_month_admissions'] as List<dynamic>? ?? [])
+              .map((e) => CurrentMonthAdmissionModel.fromJson(e))
               .toList(),
     );
   }
@@ -115,9 +98,7 @@ class CurrentMonthAdmissionModel {
     required this.guardianMobile,
   });
 
-  factory CurrentMonthAdmissionModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory CurrentMonthAdmissionModel.fromJson(Map<String, dynamic> json) {
     return CurrentMonthAdmissionModel(
       id: json['id'] ?? 0,
       customId: json['custom_id'] ?? '',

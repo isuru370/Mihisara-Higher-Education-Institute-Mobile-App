@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../student_classes/data/models/deactivate_enrollment/deactivate_enrollment_request_model.dart';
+import '../../../student_classes/presentaion/bloc/class_room/class_room_bloc.dart';
 import '../../data/models/attendance_report/student_data.dart';
+import '../../data/models/delete_attendance/delete_attendance_request_model.dart';
+import '../bloc/attendance/attendance_bloc.dart';
 
 class StudentAttendanceCard extends StatelessWidget {
   final StudentData student;
@@ -392,7 +397,6 @@ class StudentAttendanceCard extends StatelessWidget {
   }
 
   Widget _buildEnrollmentBadge() {
-    // Check if student has enrollment status field
     final isEnrolled = student.enrollmentStatus;
 
     return Container(
@@ -564,6 +568,81 @@ class StudentAttendanceCard extends StatelessWidget {
                         student.payment.receiptNumber!,
                       ),
                   ],
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 16),
+
+                  // Attendance Delete Button (Coming Soon)
+                  // ✅ Delete Attendance Button - Only for Present Students
+                  if (student.attendance.isPresent) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          _showDeleteAttendanceConfirmation(context);
+                        },
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.orange,
+                        ),
+                        label: const Text(
+                          'Delete Attendance',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: Colors.orange.withOpacity(0.4),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+
+                  const SizedBox(height: 10),
+
+                  // ✅ Remove from Class Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: student.enrollmentStatus
+                          ? () => _showDeactivateConfirmation(context)
+                          : null,
+                      icon: Icon(
+                        Icons.person_remove_outlined,
+                        color: student.enrollmentStatus
+                            ? Colors.red
+                            : Colors.grey,
+                      ),
+                      label: Text(
+                        'Remove from Class',
+                        style: TextStyle(
+                          color: student.enrollmentStatus
+                              ? Colors.red
+                              : Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: student.enrollmentStatus
+                              ? Colors.red.withOpacity(0.4)
+                              : Colors.grey.withOpacity(0.4),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -630,6 +709,237 @@ class StudentAttendanceCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showComingSoonConfirmation(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.info_outline, color: Colors.orange),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.white),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('This feature is coming soon.')),
+                      ],
+                    ),
+                    backgroundColor: Colors.orange,
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ✅ Deactivate Confirmation Dialog
+  void _showDeactivateConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Remove from Class?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Are you sure you want to remove '
+            '${student.student.initialName} from this class?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            BlocBuilder<ClassRoomBloc, ClassRoomState>(
+              builder: (context, state) {
+                return ElevatedButton(
+                  onPressed: state is ClassRoomDeactivateLoading
+                      ? null
+                      : () {
+                          // ✅ Close the confirmation dialog first
+                          Navigator.pop(dialogContext);
+                          // ✅ Then call deactivation
+                          _deactivateEnrollment(context);
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: state is ClassRoomDeactivateLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Text('Remove'),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteAttendanceConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.orange),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Delete Attendance?',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete '
+            '${student.student.initialName}\'s attendance?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+
+                _deleteAttendance(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ✅ Deactivate Enrollment - Dispatch Bloc Event
+  void _deactivateEnrollment(BuildContext context) {
+    final enrollmentId = student.enrollmentId;
+
+    if (enrollmentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enrollment ID not found.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    context.read<ClassRoomBloc>().add(
+      DeactivateEnrollmentEvent(
+        request: DeactivateEnrollmentRequestModel(
+          enrollmentId: enrollmentId.toString(),
+        ),
+      ),
+    );
+  }
+
+  void _deleteAttendance(BuildContext context) {
+    final attendanceId = student.attendance.attendanceId;
+
+    context.read<AttendanceBloc>().add(
+      DeleteAttendanceEvent(
+        request: DeleteAttendanceRequestModel(
+          attendanceId: attendanceId.toString(),
+        ),
       ),
     );
   }

@@ -7,6 +7,9 @@ import '../../../data/models/attendance_history/attendance_history_response_mode
 import '../../../data/models/attendance_report/attendance_report_request_model.dart';
 import '../../../data/models/attendance_report/attendance_report_response_model.dart';
 import '../../../data/models/attendance_response_model.dart';
+import '../../../data/models/delete_attendance/delete_attendance_request_model.dart';
+import '../../../data/models/delete_attendance/delete_attendance_response_model.dart';
+import '../../../domain/usecases/delete_attendance_usecase.dart';
 import '../../../domain/usecases/get_attendance_history_usecase.dart';
 import '../../../domain/usecases/get_attendance_report_usecase.dart';
 import '../../../domain/usecases/mark_attendance_usecase.dart';
@@ -18,15 +21,18 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   final MarkAttendanceUseCase markAttendanceUseCase;
   final GetAttendanceHistoryUseCase getAttendanceHistoryUseCase;
   final GetAttendanceReportUseCase getAttendanceReportUseCase;
+  final DeleteAttendanceUsecase deleteAttendanceUsecase;
 
   AttendanceBloc({
     required this.markAttendanceUseCase,
     required this.getAttendanceHistoryUseCase,
     required this.getAttendanceReportUseCase,
+    required this.deleteAttendanceUsecase,
   }) : super(AttendanceInitial()) {
     on<MarkAttendanceRequested>(_onMarkAttendanceRequested);
     on<AttendanceHistoryRequested>(_onAttendanceHistoryRequested);
     on<AttendanceReportRequested>(_onAttendanceReportRequested);
+    on<DeleteAttendanceEvent>(_onDeleteAttendanceRequested);
   }
 
   Future<void> _onMarkAttendanceRequested(
@@ -58,6 +64,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(AttendanceHistoryError(message: _extractErrorMessage(e)));
     }
   }
+
   Future<void> _onAttendanceReportRequested(
     AttendanceReportRequested event,
     Emitter<AttendanceState> emit,
@@ -66,14 +73,31 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
     try {
       final result = await getAttendanceReportUseCase.execute(
-        request: AttendanceReportRequestModel(
-          scheduleId: event.scheduleId,
-        ),
+        request: AttendanceReportRequestModel(scheduleId: event.scheduleId),
       );
 
       emit(AttendanceReportLoaded(response: result));
     } catch (e) {
       emit(AttendanceReportError(message: _extractErrorMessage(e)));
+    }
+  }
+
+  Future<void> _onDeleteAttendanceRequested(
+    DeleteAttendanceEvent event,
+    Emitter<AttendanceState> emit,
+  ) async {
+    emit(AttendanceDeleteLoading());
+
+    try {
+      final result = await deleteAttendanceUsecase(request: event.request);
+
+      if (result.success) {
+        emit(AttendanceDeleteSuccess(result));
+      } else {
+        emit(AttendanceError(message: result.message));
+      }
+    } catch (e) {
+      emit(AttendanceDeleteError(_extractErrorMessage(e)));
     }
   }
 

@@ -72,3 +72,23 @@ class AttendanceReportError extends AttendanceState {
   @override
   List<Object?> get props => [message];
 }
+
+final class AttendanceDeleteLoading extends AttendanceState {}
+
+final class AttendanceDeleteSuccess extends AttendanceState {
+  final DeleteAttendanceResponseModel response;
+
+  const AttendanceDeleteSuccess(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class AttendanceDeleteError extends AttendanceState {
+  final String message;
+
+  const AttendanceDeleteError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

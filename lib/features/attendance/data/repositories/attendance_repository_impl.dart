@@ -6,6 +6,8 @@ import '../models/attendance_history/attendance_history_response_model.dart';
 import '../models/attendance_report/attendance_report_request_model.dart';
 import '../models/attendance_report/attendance_report_response_model.dart';
 import '../models/attendance_response_model.dart';
+import '../models/delete_attendance/delete_attendance_request_model.dart';
+import '../models/delete_attendance/delete_attendance_response_model.dart';
 
 class AttendanceRepositoryImpl implements AttendanceRepository {
   final AttendanceRemoteDataSource remoteDataSource;
@@ -31,5 +33,12 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
     required AttendanceReportRequestModel request,
   }) async {
     return remoteDataSource.getAttendanceReport(request: request);
+  }
+
+  @override
+  Future<DeleteAttendanceResponseModel> deleteAttendance({
+    required DeleteAttendanceRequestModel request,
+  }) {
+    return remoteDataSource.deleteAttendance(request: request);
   }
 }

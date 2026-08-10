@@ -10,9 +10,7 @@ sealed class ClassRoomEvent extends Equatable {
 class LoadClassesByGradeEvent extends ClassRoomEvent {
   final String gradeId;
 
-  const LoadClassesByGradeEvent({
-    required this.gradeId,
-  });
+  const LoadClassesByGradeEvent({required this.gradeId});
 
   @override
   List<Object> get props => [gradeId];
@@ -21,9 +19,7 @@ class LoadClassesByGradeEvent extends ClassRoomEvent {
 class CreateStudentClassEnrollmentEvent extends ClassRoomEvent {
   final CreateStudentClassRequestModel request;
 
-  const CreateStudentClassEnrollmentEvent({
-    required this.request,
-  });
+  const CreateStudentClassEnrollmentEvent({required this.request});
 
   @override
   List<Object> get props => [request];
@@ -32,10 +28,17 @@ class CreateStudentClassEnrollmentEvent extends ClassRoomEvent {
 class ToggleClassStatusEvent extends ClassRoomEvent {
   final int enrollmentId;
 
-  const ToggleClassStatusEvent({
-    required this.enrollmentId,
-  });
+  const ToggleClassStatusEvent({required this.enrollmentId});
 
   @override
   List<Object> get props => [enrollmentId];
+}
+
+class DeactivateEnrollmentEvent extends ClassRoomEvent {
+  final DeactivateEnrollmentRequestModel request;
+
+  const DeactivateEnrollmentEvent({required this.request});
+
+  @override
+  List<Object> get props => [request];
 }
