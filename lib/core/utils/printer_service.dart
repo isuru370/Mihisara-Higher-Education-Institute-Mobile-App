@@ -209,7 +209,7 @@ class PrinterService {
         }
       }
     } finally {
-      await subscription?.cancel();
+      await subscription.cancel();
     }
 
     final result = await completer.future;
