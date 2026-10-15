@@ -7,31 +7,36 @@ import 'package:timezone/timezone.dart' as tz;
 import 'app.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/di/injection_container.dart';
-import 'features/admission/presentaion/bloc/admission/admission_bloc.dart';
-import 'features/attendance/presentaion/bloc/attendance/attendance_bloc.dart';
+import 'features/admin/admission/presentaion/bloc/admission/admission_bloc.dart';
+import 'features/admin/attendance/presentaion/bloc/attendance/attendance_bloc.dart';
+import 'features/admin/class_schedule/presentaion/bloc/class_category/class_category_bloc.dart';
+import 'features/admin/class_schedule/presentaion/bloc/class_schedule/class_schedule_bloc.dart';
+import 'features/admin/class_schedule/presentaion/bloc/ongoing_class/ongoing_class_bloc.dart';
+import 'features/admin/dashboard/presentaion/bloc/mobile_dashboard/mobile_dashboard_bloc.dart';
+import 'features/admin/image_upload/presentation/bloc/image_upload/image_upload_bloc.dart';
+import 'features/admin/institute_hall/presentaion/bloc/institute_hall/institute_hall_bloc.dart';
+import 'features/admin/payment/presentaion/bloc/mark_payment/mark_payment_bloc.dart';
+import 'features/admin/qr/presentation/bloc/read_attendance/read_attendance_bloc.dart';
+import 'features/admin/qr/presentation/bloc/read_payment/read_payment_bloc.dart';
+import 'features/admin/qr/presentation/bloc/read_student/read_student_bloc.dart';
+import 'features/admin/qr/presentation/bloc/read_student_classes/read_student_classes_bloc.dart';
+import 'features/admin/qr/presentation/bloc/read_tute/read_tute_bloc.dart';
+import 'features/admin/qr/presentation/bloc/scan_attendance/scan_attendance_bloc.dart';
+import 'features/admin/qr/presentation/bloc/scan_payment/scan_payment_bloc.dart';
+import 'features/admin/student_card/presentaion/bloc/student_card/student_card_bloc.dart';
+import 'features/admin/student_classes/presentaion/bloc/class_room/class_room_bloc.dart';
+import 'features/admin/student_grade/presentation/bloc/student_grade/student_grade_bloc.dart';
+import 'features/admin/student_image/presentaion/bloc/student_image/student_image_bloc.dart';
+import 'features/admin/student_tute/presentation/bloc/tute/tute_bloc.dart';
+import 'features/admin/students/presentaion/bloc/student_classes/student_classes_bloc.dart';
+import 'features/admin/students/presentaion/bloc/students/students_bloc.dart';
+import 'features/admin/today_attendance/presentation/bloc/daily_attendance_details/daily_attendance_details_bloc.dart';
+import 'features/admin/today_classes/presentaion/bloc/today_classes/today_classes_bloc.dart';
 import 'features/auth/presentation/bloc/auth/auth_bloc.dart';
-import 'features/class_schedule/presentaion/bloc/class_category/class_category_bloc.dart';
-import 'features/class_schedule/presentaion/bloc/class_schedule/class_schedule_bloc.dart';
-import 'features/class_schedule/presentaion/bloc/ongoing_class/ongoing_class_bloc.dart';
-import 'features/dashboard/presentaion/bloc/mobile_dashboard/mobile_dashboard_bloc.dart';
-import 'features/image_upload/presentation/bloc/image_upload/image_upload_bloc.dart';
-import 'features/institute_hall/presentaion/bloc/institute_hall/institute_hall_bloc.dart';
-import 'features/payment/presentaion/bloc/mark_payment/mark_payment_bloc.dart';
-import 'features/qr/presentation/bloc/read_attendance/read_attendance_bloc.dart';
-import 'features/qr/presentation/bloc/read_payment/read_payment_bloc.dart';
-import 'features/qr/presentation/bloc/read_student/read_student_bloc.dart';
-import 'features/qr/presentation/bloc/read_student_classes/read_student_classes_bloc.dart';
-import 'features/qr/presentation/bloc/read_tute/read_tute_bloc.dart';
-import 'features/qr/presentation/bloc/scan_attendance/scan_attendance_bloc.dart';
-import 'features/student_card/presentaion/bloc/student_card/student_card_bloc.dart';
-import 'features/student_classes/presentaion/bloc/class_room/class_room_bloc.dart';
-import 'features/student_grade/presentation/bloc/student_grade/student_grade_bloc.dart';
-import 'features/student_image/presentaion/bloc/student_image/student_image_bloc.dart';
-import 'features/student_tute/presentation/bloc/tute/tute_bloc.dart';
-import 'features/students/presentaion/bloc/student_classes/student_classes_bloc.dart';
-import 'features/students/presentaion/bloc/students/students_bloc.dart';
-import 'features/today_attendance/presentation/bloc/daily_attendance_details/daily_attendance_details_bloc.dart';
-import 'features/today_classes/presentaion/bloc/today_classes/today_classes_bloc.dart';
+import 'features/teacher/classess/presentaion/bloc/teacher_classes/teacher_classes_bloc.dart';
+import 'features/teacher/dashboard/presentaion/bloc/teacher_dashboard/teacher_dashboard_bloc.dart';
+import 'features/teacher/students/presentaion/bloc/teacher_students/teacher_students_bloc.dart';
+import 'features/teacher/timetable/presentaion/bloc/teacher_timetable/teacher_timetable_bloc.dart';
 import 'simple_bloc_observer.dart';
 
 Future<void> main() async {
@@ -75,6 +80,13 @@ Future<void> main() async {
         BlocProvider(create: (_) => sl<ClassCategoryBloc>()),
         BlocProvider(create: (_) => sl<InstituteHallBloc>()),
         BlocProvider(create: (_) => sl<StudentCardBloc>()),
+        BlocProvider(create: (_) => sl<ScanPaymentBloc>()),
+
+        // Teacher Bloc
+        BlocProvider(create: (_) => sl<TeacherDashboardBloc>()),
+        BlocProvider(create: (_) => sl<TeacherClassesBloc>()),
+        BlocProvider(create: (_) => sl<TeacherTimetableBloc>()),
+        BlocProvider(create: (_) => sl<TeacherStudentsBloc>()),
       ],
       child: const NexoraMobileApp(),
     ),

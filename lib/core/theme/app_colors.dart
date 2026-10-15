@@ -137,6 +137,8 @@ class AppColors {
   static const double paddingSmall = 8;
   static const double paddingMedium = 16;
   static const double paddingLarge = 24;
+  static const double spacingLarge = 24;
+  static const double spacingXLarge = 32;
 
   // =========================
   // ICON COLORS
@@ -145,4 +147,5 @@ class AppColors {
   static const Color iconPrimary = dark;
   static const Color iconSecondary = secondary;
   static const Color iconLight = Colors.white;
+
 }

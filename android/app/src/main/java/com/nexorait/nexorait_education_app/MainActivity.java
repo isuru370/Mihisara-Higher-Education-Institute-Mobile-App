@@ -1,4 +1,4 @@
-package com.nexorait.mihisara_education_app;
+package com.nexorait.master_app;
 
 import io.flutter.embedding.android.FlutterActivity;
 

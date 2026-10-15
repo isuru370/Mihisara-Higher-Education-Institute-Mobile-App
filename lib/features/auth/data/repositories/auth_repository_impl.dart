@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/datasources/auth_remote_data_source.dart';
-import '../../data/models/login_request_model.dart';
-import '../../data/models/login_response_model.dart';
+import '../datasources/auth_remote_data_source.dart';
+import '../models/login_request_model.dart';
+import '../models/login_response_model.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {

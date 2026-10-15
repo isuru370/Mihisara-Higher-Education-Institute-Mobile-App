@@ -1,6 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+
+import '../../core/storage/session_storage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,17 +26,82 @@ class _SplashScreenState extends State<SplashScreen>
 
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
-    _scale = Tween(
+    _scale = Tween<double>(
       begin: 0.8,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _controller.forward();
 
-    // Navigate after 3 seconds
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/signup');
-    });
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    // Wait for splash animation
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    // Get saved token
+    final token = await SessionStorage.getToken();
+
+    if (!mounted) return;
+
+    // No token -> Sign In
+    if (token == null || token.trim().isEmpty) {
+      Navigator.pushReplacementNamed(context, '/signin');
+      return;
+    }
+
+    // Get saved user
+    final user = await SessionStorage.getUser();
+
+    if (!mounted) return;
+
+    // User data not found -> clear session and Sign In
+    if (user == null) {
+      await SessionStorage.clear();
+
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(context, '/signin');
+      return;
+    }
+
+    // Get role from user type
+    final role = user.userType?.code.toUpperCase() ?? '';
+
+    debugPrint('SPLASH USER ROLE: $role');
+
+    // Navigate according to role
+    switch (role) {
+      case 'TEACHER':
+        Navigator.pushReplacementNamed(
+          context,
+          '/teacher-dashboard',
+          arguments: {'token': token, 'user_model': user},
+        );
+        break;
+
+      case 'ADMIN':
+      case 'SUPER_ADMIN':
+      case 'USER':
+        Navigator.pushReplacementNamed(
+          context,
+          '/dashboard',
+          arguments: {'token': token, 'user_model': user},
+        );
+        break;
+
+      default:
+        // Unknown role
+        await SessionStorage.clear();
+
+        if (!mounted) return;
+
+        Navigator.pushReplacementNamed(context, '/signin');
+        break;
+    }
   }
 
   @override
@@ -51,7 +116,10 @@ class _SplashScreenState extends State<SplashScreen>
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color.fromARGB(255, 112, 122, 126), Color.fromARGB(255, 161, 172, 177)],
+            colors: [
+              Color.fromARGB(255, 112, 122, 126),
+              Color.fromARGB(255, 161, 172, 177),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -64,7 +132,6 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  /// 🔥 Your Logo
                   SizedBox(
                     height: 140,
                     child: Image.asset(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/storage/session_storage.dart';
+import '../../../../../core/storage/session_storage.dart';
 import '../bloc/auth/auth_bloc.dart';
 
 class SigninPage extends StatefulWidget {
@@ -84,13 +84,29 @@ class _SigninPageState extends State<SigninPage> {
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthSuccess) {
-              Navigator.of(context).pushReplacementNamed(
-                '/dashboard',
-                arguments: {
-                  'token': state.token,
-                  'user_model': state.userModel,
-                },
-              );
+              final user = state.userModel;
+
+              final role = user.userType?.code.toUpperCase() ?? '';
+
+              debugPrint('LOGIN ROLE: $role');
+
+              if (role == 'TEACHER') {
+                Navigator.of(context).pushReplacementNamed(
+                  '/teacher-dashboard',
+                  arguments: {'token': state.token, 'user_model': user},
+                );
+              } else if (role == 'ADMIN' ||
+                  role == 'SUPER_ADMIN' ||
+                  role == 'USER') {
+                Navigator.of(context).pushReplacementNamed(
+                  '/dashboard',
+                  arguments: {'token': state.token, 'user_model': user},
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Unknown user role')),
+                );
+              }
             } else if (state is AuthFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

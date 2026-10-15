@@ -1,48 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nexorait_education_app/features/admin/class_schedule/presentaion/page/ongoing_class_page.dart';
+import 'package:nexorait_education_app/features/admin/student_classes/presentaion/pages/create_student_classes.dart';
+import 'package:nexorait_education_app/features/admin/students/presentaion/pages/create_student_page.dart';
+import 'package:nexorait_education_app/features/admin/students/presentaion/pages/student_custom_id_page.dart';
+import 'package:nexorait_education_app/features/admin/students/presentaion/pages/student_list_page.dart';
+import 'package:nexorait_education_app/features/admin/today_attendance/presentation/pages/today_attendance_page.dart';
+import 'package:nexorait_education_app/features/admin/today_classes/presentaion/page/today_classes_page.dart';
 import 'package:nexorait_education_app/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:nexorait_education_app/features/class_schedule/presentaion/page/ongoing_class_page.dart';
-import 'package:nexorait_education_app/features/payment/presentaion/pages/payment_page.dart';
-import 'package:nexorait_education_app/features/payment/presentaion/pages/today_payment_page.dart';
-import 'package:nexorait_education_app/features/student_classes/presentaion/pages/create_student_classes.dart';
-import 'package:nexorait_education_app/features/students/presentaion/pages/create_student_page.dart';
-import 'package:nexorait_education_app/features/students/presentaion/pages/student_custom_id_page.dart';
-import 'package:nexorait_education_app/features/students/presentaion/pages/student_list_page.dart';
-import 'package:nexorait_education_app/features/today_attendance/presentation/pages/today_attendance_page.dart';
-import 'package:nexorait_education_app/features/today_classes/presentaion/page/today_classes_page.dart';
 
-import '../features/admission/presentaion/page/admission_payment_page.dart';
-import '../features/attendance/presentaion/pages/attendance_history_page.dart';
-import '../features/attendance/presentaion/pages/attendance_page.dart';
-import '../features/attendance/presentaion/pages/attendance_page_new.dart';
-import '../features/attendance/presentaion/pages/attendance_report_page.dart';
-import '../features/attendance/presentaion/pages/attendance_schedule_page.dart';
+import '../features/admin/admission/presentaion/page/admission_payment_page.dart';
+import '../features/admin/attendance/presentaion/pages/attendance_history_page.dart';
+import '../features/admin/attendance/presentaion/pages/attendance_page.dart';
+import '../features/admin/attendance/presentaion/pages/attendance_page_new.dart';
+import '../features/admin/attendance/presentaion/pages/attendance_report_page.dart';
+import '../features/admin/attendance/presentaion/pages/attendance_schedule_page.dart';
+import '../features/admin/dashboard/presentaion/pages/dashboard_page.dart';
+import '../features/admin/image_upload/presentation/pages/camera_screen_page.dart';
+import '../features/admin/image_upload/presentation/pages/student_image_capture_page.dart';
+import '../features/admin/payment/presentaion/pages/payment_history_view_page.dart';
+import '../features/admin/payment/presentaion/pages/payment_page.dart';
+import '../features/admin/payment/presentaion/pages/today_payment_page.dart';
+import '../features/admin/printer/presentaion/page/print_test_page.dart';
+import '../features/admin/qr/data/model/read_attendance/read_attendance_data_model.dart';
+import '../features/admin/qr/data/model/read_student_classes/read_student_classes_response_model.dart';
+import '../features/admin/qr/data/model/read_tute/read_tute_response_model.dart';
+import '../features/admin/qr/data/model/scan_attendance_new/scan_attendance_response_model.dart';
+import '../features/admin/qr/presentation/pages/attendance_qr_scanner_page.dart';
+import '../features/admin/qr/presentation/pages/qr_scanner_page.dart';
+import '../features/admin/qr/presentation/pages/scan_payment_page.dart';
+import '../features/admin/student_card/data/model/assignment/assignment_search_student_response_model.dart';
+import '../features/admin/student_card/presentaion/page/re_assign_card_page.dart';
+import '../features/admin/student_card/presentaion/page/register_details_page.dart';
+import '../features/admin/student_card/presentaion/page/scan_student_card_page.dart';
+import '../features/admin/student_card/presentaion/page/student_card_assignment_page.dart';
+import '../features/admin/student_image/presentaion/pages/student_image_page.dart';
+import '../features/admin/student_tute/presentation/pages/create_tute_page.dart';
+import '../features/admin/student_tute/presentation/pages/tute_view_page.dart';
+import '../features/admin/students/presentaion/pages/create_new_student_page.dart';
 import '../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
 import '../features/auth/domain/usecases/login_usecase.dart';
 import '../features/auth/presentation/bloc/auth/auth_bloc.dart';
 import '../features/auth/presentation/pages/signin_page.dart';
-import '../features/dashboard/presentaion/pages/dashboard_page.dart';
-import '../features/image_upload/presentation/pages/camera_screen_page.dart';
-import '../features/image_upload/presentation/pages/student_image_capture_page.dart';
-import '../features/payment/presentaion/pages/payment_history_view_page.dart';
-import '../features/printer/presentaion/page/print_test_page.dart';
-import '../features/qr/data/model/read_attendance/read_attendance_data_model.dart';
-import '../features/qr/data/model/read_student_classes/read_student_classes_response_model.dart';
-import '../features/qr/data/model/read_tute/read_tute_response_model.dart';
-import '../features/qr/data/model/scan_attendance_new/scan_attendance_response_model.dart';
-import '../features/qr/presentation/pages/attendance_qr_scanner_page.dart';
-import '../features/qr/presentation/pages/qr_scanner_page.dart';
 import '../features/splash_screen.dart';
-import '../features/student_card/data/model/assignment/assignment_search_student_response_model.dart';
-import '../features/student_card/presentaion/page/re_assign_card_page.dart';
-import '../features/student_card/presentaion/page/register_details_page.dart';
-import '../features/student_card/presentaion/page/scan_student_card_page.dart';
-import '../features/student_card/presentaion/page/student_card_assignment_page.dart';
-import '../features/student_image/presentaion/pages/student_image_page.dart';
-import '../features/student_tute/presentation/pages/create_tute_page.dart';
-import '../features/student_tute/presentation/pages/tute_view_page.dart';
-import '../features/students/presentaion/pages/create_new_student_page.dart';
+import '../features/teacher/dashboard/presentaion/pages/teacher_dashboard_page.dart';
 
 class AppRoutes {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -69,6 +71,13 @@ class AppRoutes {
           builder: (_) => BlocProvider.value(
             value: authBloc, // re-use the same AuthBloc from login
             child: DashboardPage(),
+          ),
+        );
+      case '/teacher-dashboard':
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: authBloc, // re-use the same AuthBloc from login
+            child: TeacherDashboardPage(),
           ),
         );
 
@@ -228,12 +237,15 @@ class AppRoutes {
                 false,
           ),
         );
+      case '/payment-scan':
+        return MaterialPageRoute(builder: (_) => ScanPaymentPage());
+
       case '/payment-details':
         final args = settings.arguments as Map<String, dynamic>; // cast as Map
 
         return MaterialPageRoute(
           builder: (_) => PaymentPage(
-            paymentState: args['paymentState'], // pass the loaded state
+            paymentResponse: args['paymentState'], // pass the loaded state
             markMethod: args['mark_method'] as String?,
           ),
         );
