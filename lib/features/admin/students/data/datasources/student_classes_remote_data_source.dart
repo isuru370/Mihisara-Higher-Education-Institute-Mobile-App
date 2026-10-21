@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import '../../../../../core/network/api_http.dart' as http;
 import 'package:nexorait_education_app/features/admin/students/data/models/student_classes_model/student_class_response_model.dart';
 import 'package:nexorait_education_app/features/admin/students/data/models/student_classes_model/student_request_model.dart';
 
