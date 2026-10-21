@@ -1,4 +1,4 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/storage/session_storage.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../models/login_request_model.dart';
 import '../models/login_response_model.dart';
@@ -29,8 +29,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> clearToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
+    // The token is saved under SessionStorage's key, not 'token'.
+    await SessionStorage.clear();
   }
 }
 
