@@ -49,8 +49,10 @@ class TodayPaymentItemModel {
   });
 
   factory TodayPaymentItemModel.fromJson(
-    Map<String, dynamic> json,
+    Map<String, dynamic> raw,
   ) {
+    final json = _normalize(raw);
+
     return TodayPaymentItemModel(
       paymentId: int.tryParse(
             json['payment_id']?.toString() ?? '0',
@@ -133,5 +135,68 @@ class TodayPaymentItemModel {
             )
           : TodayPaymentEnrollmentModel.empty(),
     );
+  }
+
+  /// The server's /payments/today sends each row nested:
+  ///   { payment: {id, amount, ...}, student: {...},
+  ///     student_class_enrollment: {id},
+  ///     student_class: {id, class_name, grade, subject, teacher, category} }
+  /// but this model reads a flat row (payment_id, amount, class, category,
+  /// ...). Without this every row showed amount 0 and no class/category.
+  /// Flat rows are returned unchanged.
+  static Map<String, dynamic> _normalize(Map<String, dynamic> json) {
+    final payment = json['payment'];
+    if (payment is! Map) return json;
+
+    Map<String, dynamic> map(dynamic value) =>
+        value is Map ? Map<String, dynamic>.from(value) : <String, dynamic>{};
+
+    final p = map(payment);
+    final student = map(json['student']);
+    final studentClass = map(json['student_class']);
+    final grade = map(studentClass['grade']);
+    final teacher = map(studentClass['teacher']);
+    final category = map(studentClass['category']);
+    final enrollment = map(json['student_class_enrollment']);
+
+    return {
+      'payment_id': p['id'],
+      'receipt_number': p['receipt_number'],
+      'amount': p['amount'],
+      'discount_amount': p['discount_amount'],
+      'paid_at': p['paid_at'],
+      'payment_month': p['payment_month'],
+      'payment_method': p['payment_method'],
+      // The endpoint only returns completed payments.
+      'status': p['status'] ?? 'completed',
+      'reference_number': p['reference_number'],
+      'mark_method': p['mark_method'],
+      'note': p['note'],
+      'student': {
+        ...student,
+        'qr_code': student['qr_code'] ?? student['custom_id'],
+      },
+      'class': {
+        'id': studentClass['id'],
+        'class_name': studentClass['class_name'],
+      },
+      'category': {
+        'id': category['id'],
+        'name': category['name'] ?? category['category_name'],
+      },
+      'grade': {
+        'id': grade['id'],
+        'name': grade['name'] ?? grade['grade_name'],
+      },
+      'teacher': {
+        'id': teacher['id'],
+        'custom_id': teacher['custom_id'],
+        'name': teacher['name'] ?? teacher['initials'],
+      },
+      'enrollment': {
+        ...map(json['enrollment']),
+        'id': enrollment['id'] ?? map(json['enrollment'])['id'],
+      },
+    };
   }
 }
