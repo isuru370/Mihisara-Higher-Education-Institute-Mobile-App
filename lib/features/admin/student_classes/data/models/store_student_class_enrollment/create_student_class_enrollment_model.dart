@@ -4,7 +4,9 @@ class CreateStudentClassEnrollmentModel {
   final int studentId;
   final int studentClassId;
   final int classCategoryFeeId;
-  final int classCategoryFeeOptionId;
+  /// Null when the category has no fee options (the API allows that and
+  /// uses the category fee).
+  final int? classCategoryFeeOptionId;
 
   final bool isFreeCard;
 
@@ -22,7 +24,7 @@ class CreateStudentClassEnrollmentModel {
     required this.studentId,
     required this.studentClassId,
     required this.classCategoryFeeId,
-    required this.classCategoryFeeOptionId,
+    this.classCategoryFeeOptionId,
     this.isFreeCard = false,
     this.enrolledAt,
     this.note,
@@ -42,9 +44,9 @@ class CreateStudentClassEnrollmentModel {
       classCategoryFeeId: _parseInt(
         json['class_category_fee_id'],
       ),
-      classCategoryFeeOptionId: _parseInt(
-        json['class_category_fee_option_id'],
-      ),
+      classCategoryFeeOptionId: json['class_category_fee_option_id'] == null
+          ? null
+          : _parseInt(json['class_category_fee_option_id']),
 
       isFreeCard: _parseBool(
         json['is_free_card'],
@@ -71,9 +73,10 @@ class CreateStudentClassEnrollmentModel {
       'student_id': studentId,
       'student_class_id': studentClassId,
       'class_category_fee_id': classCategoryFeeId,
-      'class_category_fee_option_id': classCategoryFeeOptionId,
+      if (classCategoryFeeOptionId != null)
+        'class_category_fee_option_id': classCategoryFeeOptionId,
       'is_free_card': isFreeCard,
-      'enrolled_at': enrolledAt,
+      if (enrolledAt != null) 'enrolled_at': enrolledAt,
       'note': note,
     };
   }
