@@ -68,8 +68,14 @@ class StudentClassRemoteDatasource {
       final decoded = jsonDecode(response.body);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return CreateStudentClassResponseModel.fromJson(
-          decoded as Map<String, dynamic>,
+        final body = decoded is Map<String, dynamic>
+            ? decoded
+            : <String, dynamic>{};
+
+        // A 2xx answer means the enrollment was saved.
+        return CreateStudentClassResponseModel(
+          success: true,
+          message: body['message']?.toString() ?? 'Student enrolled successfully.',
         );
       } else if (response.statusCode == 422) {
         final message = decoded['message']?.toString() ?? 'Validation failed';

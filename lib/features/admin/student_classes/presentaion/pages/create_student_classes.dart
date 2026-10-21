@@ -115,12 +115,29 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
       selectedCategory = null;
     }
 
+    final options = (selectedCategory?.feeOptions ?? [])
+        .where((option) => option.isActive)
+        .toList();
+
+    // Pre-select the default option (or the only one) so staff don't have
+    // to pick it every time.
+    FeeOptionDataModel? preselected;
+    for (final option in options) {
+      if (option.isDefault) {
+        preselected = option;
+        break;
+      }
+    }
+    if (preselected == null && options.length == 1) {
+      preselected = options.first;
+    }
+
     setState(() {
       _selectedCategoryFeeId = categoryFeeId;
 
-      _selectedFeeOptionId = null;
+      _selectedFeeOptionId = preselected?.id;
 
-      _availableFeeOptions = selectedCategory?.feeOptions ?? [];
+      _availableFeeOptions = options;
     });
   }
 
@@ -128,6 +145,18 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
     setState(() {
       _selectedFeeOptionId = feeOptionId;
     });
+  }
+
+  /// True when the student already has this class + category (active or
+  /// not). The server would reject it with "already enrolled".
+  bool _isAlreadyEnrolled(int classId, int categoryFeeId) {
+    for (final item in _currentReadStudentClassesState.data) {
+      if (item.classId == classId &&
+          item.classCategoryFeeId == categoryFeeId) {
+        return true;
+      }
+    }
+    return false;
   }
 
   void _onFreeCardChanged(bool value) {
@@ -453,6 +482,9 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
 
             BlocBuilder<ClassRoomBloc, ClassRoomState>(
               builder: (context, state) {
+                // After Add / toggle the bloc state is no longer
+                // ClassRoomLoaded; keep showing the classes loaded for this
+                // grade (they are stored in the listener below).
                 final classItems = state is ClassRoomLoaded
                     ? state.response.data
                     : _availableClasses;
@@ -479,6 +511,10 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
                 }
 
                 return DropdownButtonFormField<int>(
+                  // initialValue is only read when the field is created, so
+                  // a key per grade/selection makes resets show correctly
+                  // (and avoids the "exactly one item" crash).
+                  key: ValueKey('class-$_selectedGradeId-$_selectedClassId'),
                   initialValue: _selectedClassId,
                   isExpanded: true,
                   itemHeight: null,
@@ -573,6 +609,9 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
             const SizedBox(height: 8),
 
             DropdownButtonFormField<int>(
+              key: ValueKey(
+                'category-$_selectedClassId-$_selectedCategoryFeeId',
+              ),
               initialValue: _selectedCategoryFeeId,
               isExpanded: true,
               decoration: _fieldDecoration(
@@ -605,13 +644,16 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
             const SizedBox(height: 8),
 
             DropdownButtonFormField<int>(
+              key: ValueKey(
+                'option-$_selectedCategoryFeeId-$_selectedFeeOptionId',
+              ),
               initialValue: _selectedFeeOptionId,
               isExpanded: true,
               decoration: _fieldDecoration(
                 _selectedCategoryFeeId == null
                     ? 'Select category first'
                     : _availableFeeOptions.isEmpty
-                    ? 'No fee options available'
+                    ? 'No fee options - category fee is used'
                     : 'Choose fee option',
               ),
               items: _availableFeeOptions.map<DropdownMenuItem<int>>((option) {
@@ -812,8 +854,18 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
       return;
     }
 
-    if (_selectedFeeOptionId == null) {
+    // A fee option is needed only when the category has options; without
+    // options the server uses the category fee.
+    if (_availableFeeOptions.isNotEmpty && _selectedFeeOptionId == null) {
       _showSnack('Please select a fee option');
+      return;
+    }
+
+    if (_isAlreadyEnrolled(_selectedClassId!, _selectedCategoryFeeId!)) {
+      _showSnack(
+        'This student is already enrolled in this class and category. '
+        'Use View Classes to activate it.',
+      );
       return;
     }
 
@@ -823,7 +875,8 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
       studentId: studentId,
       studentClassId: _selectedClassId!,
       classCategoryFeeId: _selectedCategoryFeeId!,
-      classCategoryFeeOptionId: _selectedFeeOptionId!,
+      classCategoryFeeOptionId:
+          _availableFeeOptions.isEmpty ? null : _selectedFeeOptionId,
       isFreeCard: _isStudentFreeCard,
       note: autoNote,
     );
@@ -1142,13 +1195,29 @@ class _CreateStudentClassesState extends State<CreateStudentClasses> {
       listeners: [
         BlocListener<ClassRoomBloc, ClassRoomState>(
           listener: (context, state) {
+            if (state is ClassRoomLoaded) {
+              _availableClasses = state.response.data;
+            }
+
             if (state is ClassRoomCreateSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Class enrolled successfully'),
+                SnackBar(
+                  content: Text(
+                    '${_getSelectedClassName() ?? 'Class'} enrolled successfully',
+                  ),
                   backgroundColor: Colors.green,
                 ),
               );
+
+              // Clear the form so the same class is not added twice.
+              setState(() {
+                _selectedClassId = null;
+                _selectedCategoryFeeId = null;
+                _selectedFeeOptionId = null;
+                _availableCategoryFees = [];
+                _availableFeeOptions = [];
+                _isStudentFreeCard = false;
+              });
 
               _refreshStudentClasses();
             }
