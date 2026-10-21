@@ -271,6 +271,24 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
     context.read<ReadPaymentBloc>().add(ReadPaymentRequested(studentCode));
   }
 
+  /// Colour of the bottom sheet border while a marked student is shown:
+  /// red = this month unpaid, green = paid, amber = free card.
+  /// Null for every other state (loading, error, class choice, empty).
+  Color? get _paymentBorderColor {
+    final response = _scanResponse;
+    final data = response?.data;
+
+    if (_isMarkingAttendance ||
+        _errorMessage != null ||
+        response == null ||
+        response.requiresSelection ||
+        data == null) {
+      return null;
+    }
+
+    return _PaymentStatus.from(data).color;
+  }
+
   //---------------------------------------
   // Show BottomSheet with Animation
   //---------------------------------------
@@ -572,23 +590,30 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
               builder: (context, child) {
                 final screenHeight = MediaQuery.of(context).size.height;
                 final sheetHeight = screenHeight * 0.50;
+                final borderColor = _paymentBorderColor;
 
                 return Positioned(
                   left: 0,
                   right: 0,
                   bottom: -sheetHeight * _slideAnimation.value,
                   height: sheetHeight,
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(24),
                       ),
+                      // Thick red border when this month is unpaid
+                      // (green paid, amber free card).
+                      border: borderColor != null
+                          ? Border.all(color: borderColor, width: 4)
+                          : null,
                       boxShadow: AppColors.mediumShadow,
                     ),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
+                        top: Radius.circular(20),
                       ),
                       child: _buildBottomSheetContent(),
                     ),
@@ -720,6 +745,32 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
             Text(
               "Attendance NOT marked",
               style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_attendanceSuccess && _paymentBorderColor == AppColors.danger) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.danger.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.check_circle, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text(
+              "Attendance Marked  •  UNPAID",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -1270,11 +1321,10 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
     // Current month payment: paid / not paid / free card
     final payStatus = _PaymentStatus.from(data);
 
+    // The bottom sheet border shows the payment colour (see
+    // _paymentBorderColor), so no extra line is drawn here.
     return Column(
       children: [
-        // Coloured line at the top: green paid, red not paid, amber free card
-        Container(height: 5, color: payStatus.color),
-
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1855,9 +1905,9 @@ class _PaymentStatus {
     }
 
     return _PaymentStatus(
-      title: 'NOT PAID',
-      shortLabel: 'NOT PAID',
-      message: '$monthLabel fee is not paid. Collect the payment.',
+      title: 'UNPAID',
+      shortLabel: 'UNPAID',
+      message: '$monthLabel fee is unpaid. Collect the payment.',
       icon: Icons.cancel,
       color: AppColors.danger,
     );
