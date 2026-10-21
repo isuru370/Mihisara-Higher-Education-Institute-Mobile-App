@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/storage/session_storage.dart';
+import '../core/storage/session_storage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

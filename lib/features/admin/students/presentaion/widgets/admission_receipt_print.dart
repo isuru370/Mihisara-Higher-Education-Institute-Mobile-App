@@ -1,7 +1,7 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../../../core/utils/printer_service.dart';
+import '../../../../../core/utils/printer_service.dart';
 
 class AdmissionReceiptPrint {
   const AdmissionReceiptPrint._();
