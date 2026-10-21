@@ -15,20 +15,30 @@ class TodayClassesResponseModel {
     required this.data,
   });
 
+  /// Accepts both response shapes:
+  ///  - flat:   { success, date, count, data: [ ...classes ] }   (current API)
+  ///  - nested: { success, data: { date, count, data: [ ...classes ] } }
   factory TodayClassesResponseModel.fromJson(Map<String, dynamic> json) {
-    final responseData = json['data'] as Map<String, dynamic>? ?? {};
+    final rawData = json['data'];
+
+    final Map<String, dynamic> meta =
+        rawData is Map<String, dynamic> ? rawData : json;
+
+    final rawItems = rawData is List ? rawData : meta['data'];
+
+    final items = rawItems is List
+        ? rawItems
+            .whereType<Map<String, dynamic>>()
+            .map(TodayClassItemModel.fromJson)
+            .toList()
+        : <TodayClassItemModel>[];
 
     return TodayClassesResponseModel(
       success: json['success'] == true,
       message: json['message']?.toString() ?? '',
-      date: responseData['date']?.toString() ?? '',
-      count: _toInt(responseData['count']),
-      data: (responseData['data'] as List<dynamic>? ?? [])
-          .map(
-            (item) =>
-                TodayClassItemModel.fromJson(item as Map<String, dynamic>),
-          )
-          .toList(),
+      date: meta['date']?.toString() ?? '',
+      count: meta['count'] != null ? _toInt(meta['count']) : items.length,
+      data: items,
     );
   }
 
