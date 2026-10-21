@@ -4,6 +4,7 @@ import 'schedule_model.dart';
 import 'enrollment_model.dart';
 import 'last_payment_model.dart';
 import 'attendance_summary_model.dart';
+import 'current_month_payment_model.dart';
 import 'tute_model.dart';
 
 class AttendanceDataModel {
@@ -11,6 +12,9 @@ class AttendanceDataModel {
   final ScheduleModel schedule;
   final EnrollmentModel enrollment;
   final LastPaymentModel? lastPayment;
+
+  /// Null when the server is older and does not send it.
+  final CurrentMonthPaymentModel? currentMonthPayment;
   final AttendanceSummaryModel attendance;
   final TuteModel tute;
   final AttendanceResultModel attendanceResult;
@@ -20,6 +24,7 @@ class AttendanceDataModel {
     required this.schedule,
     required this.enrollment,
     this.lastPayment,
+    this.currentMonthPayment,
     required this.attendance,
     required this.tute,
     required this.attendanceResult,
@@ -42,6 +47,13 @@ class AttendanceDataModel {
               json['last_payment'] as Map<String, dynamic>,
             )
           : null,
+
+      currentMonthPayment:
+          json['current_month_payment'] is Map<String, dynamic>
+              ? CurrentMonthPaymentModel.fromJson(
+                  json['current_month_payment'] as Map<String, dynamic>,
+                )
+              : null,
 
       attendance: AttendanceSummaryModel.fromJson(
         json['attendance'] as Map<String, dynamic>,

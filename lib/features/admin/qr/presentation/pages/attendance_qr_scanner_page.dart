@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/utils/app_datetime.dart';
+import '../../data/model/scan_attendance_new/attendance_data_model.dart';
 import '../../data/model/scan_attendance_new/class_selection_model.dart';
 import '../../data/model/scan_attendance_new/scan_attendance_response_model.dart';
 import '../bloc/read_payment/read_payment_bloc.dart';
@@ -441,6 +442,7 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
                   'mark_method': 'qr_mobile',
                 },
               ).then((_) {
+                if (!mounted) return;
                 setState(() {
                   _isScanning = false;
                 });
@@ -448,10 +450,18 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
             }
 
             if (state is ReadPaymentError) {
-              setState(() {
-                _isPaymentProcessing = false;
-                _errorMessage = state.message;
-              });
+              // Attendance is already marked here, so don't replace the
+              // student panel with the "not marked" error panel.
+              setState(() => _isPaymentProcessing = false);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    state.message.replaceFirst('Exception: ', ''),
+                  ),
+                  backgroundColor: AppColors.danger,
+                ),
+              );
             }
           },
         ),
@@ -1255,251 +1265,299 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
     final payment = data.lastPayment;
     final classInfo = schedule.studentClass;
 
-    // Check if student has paid for current month
     final alreadyMarked = data.attendanceResult.alreadyMarked;
 
-    final isPaid = payment != null && payment.status.toUpperCase() == "PAID";
+    // Current month payment: paid / not paid / free card
+    final payStatus = _PaymentStatus.from(data);
 
-    // Payment month label
-    final paymentMonthLabel = payment != null
-        ? payment.paymentMonth
-        : AppDateTime.getShortMonthName(DateTime.now());
+    return Column(
+      children: [
+        // Coloured line at the top: green paid, red not paid, amber free card
+        Container(height: 5, color: payStatus.color),
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          //====================================
-          // Header: Success Badge + Free Card Chip
-          //====================================
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: alreadyMarked
-                      ? AppColors.warning.withOpacity(0.12)
-                      : AppColors.successLight,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                //====================================
+                // Header: Success Badge + Free Card Chip
+                //====================================
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      alreadyMarked ? Icons.info_outline : Icons.check_circle,
-                      color: alreadyMarked
-                          ? AppColors.warning
-                          : AppColors.success,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      alreadyMarked ? "Already Marked" : "Attendance Marked",
-                      style: TextStyle(
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
                         color: alreadyMarked
-                            ? AppColors.warning
-                            : AppColors.success,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                            ? AppColors.warning.withOpacity(0.12)
+                            : AppColors.successLight,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            alreadyMarked ? Icons.info_outline : Icons.check_circle,
+                            color: alreadyMarked
+                                ? AppColors.warning
+                                : AppColors.success,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            alreadyMarked ? "Already Marked" : "Attendance Marked",
+                            style: TextStyle(
+                              color: alreadyMarked
+                                  ? AppColors.warning
+                                  : AppColors.success,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              // Free Card Chip
-              if (enrollment.isFreeCard)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.warning, AppColors.primary],
+
+                const SizedBox(height: 12),
+
+                //====================================
+                // Student Info
+                //====================================
+                Row(
+                  children: [
+                    _studentImage(student.imgUrl),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            student.initialName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.dark,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "ID: ${student.studentCode}  •  Grade: ${student.grade.gradeName}",
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "${classInfo.className} • ${classInfo.subject}",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(Icons.credit_card, color: Colors.white, size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        "FREE CARD",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                        ),
+                  ],
+                ),
+
+                const SizedBox(height: 14),
+
+                //====================================
+                // Current Month Payment Message
+                //====================================
+                _buildPaymentStatusBanner(payStatus),
+
+                const SizedBox(height: 14),
+
+                //====================================
+                // Summary Cards - Horizontal
+                //====================================
+                SizedBox(
+                  height: 100,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      // This month's payment: green / red / amber
+                      _SummaryCard(
+                        title: "This Month",
+                        value: payStatus.shortLabel,
+                        icon: payStatus.icon,
+                        color: payStatus.color,
+                        highlighted: true,
+                      ),
+
+                      // Last payment month
+                      _SummaryCard(
+                        title: "Last Paid",
+                        value: payment != null && payment.paymentMonth.isNotEmpty
+                            ? _formatMonth(payment.paymentMonth)
+                            : "None",
+                        icon: Icons.calendar_month,
+                        color: AppColors.info,
+                      ),
+
+                      // Fee Amount
+                      _SummaryCard(
+                        title: "Fee",
+                        value: "Rs.${enrollment.finalFee.toStringAsFixed(0)}",
+                        icon: Icons.payments,
+                        color: AppColors.primary,
+                      ),
+
+                      // Attendance
+                      _SummaryCard(
+                        title: "Attendance",
+                        value: "${attendance.presentCount}/${attendance.totalCount}",
+                        icon: Icons.fact_check,
+                        color: AppColors.secondary,
+                      ),
+
+                      // Percentage
+                      _SummaryCard(
+                        title: "Percentage",
+                        value: "${attendance.attendancePercentage}%",
+                        icon: Icons.percent,
+                        color: AppColors.warning,
+                      ),
+
+                      // Class Time
+                      _SummaryCard(
+                        title: "Class Time",
+                        value:
+                            "${_formatTime(schedule.startTime)} - ${_formatTime(schedule.endTime)}",
+                        icon: Icons.access_time,
+                        color: AppColors.info,
                       ),
                     ],
                   ),
                 ),
-            ],
-          ),
 
-          const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
-          //====================================
-          // Student Info
-          //====================================
-          Row(
-            children: [
-              _studentImage(student.imgUrl),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      student.initialName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.dark,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      "ID: ${student.studentCode}  •  Grade: ${student.grade.gradeName}",
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      "${classInfo.className} • ${classInfo.subject}",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          //====================================
-          // Summary Cards - Horizontal
-          //====================================
-          SizedBox(
-            height: 100,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                // Payment Status - GREEN if PAID
-                _SummaryCard(
-                  title: "Payment",
-                  value: isPaid ? "PAID" : "UNPAID",
-                  icon: isPaid ? Icons.check_circle : Icons.payment,
-                  color: isPaid ? AppColors.success : AppColors.danger,
-                  isPaid: isPaid,
-                ),
-
-                // Payment Month
-                _SummaryCard(
-                  title: "Month",
-                  value: paymentMonthLabel,
-                  icon: Icons.calendar_month,
-                  color: AppColors.info,
-                  isPaid: false,
-                ),
-
-                // Fee Amount
-                _SummaryCard(
-                  title: "Fee",
-                  value: "Rs.${enrollment.finalFee.toStringAsFixed(0)}",
-                  icon: Icons.payments,
-                  color: AppColors.primary,
-                  isPaid: false,
-                ),
-
-                // Attendance
-                _SummaryCard(
-                  title: "Attendance",
-                  value: "${attendance.presentCount}/${attendance.totalCount}",
-                  icon: Icons.fact_check,
-                  color: AppColors.secondary,
-                  isPaid: false,
-                ),
-
-                // Percentage
-                _SummaryCard(
-                  title: "Percentage",
-                  value: "${attendance.attendancePercentage}%",
-                  icon: Icons.percent,
-                  color: AppColors.warning,
-                  isPaid: false,
-                ),
-
-                // Class Time
-                _SummaryCard(
-                  title: "Class Time",
-                  value: "${schedule.startTime} - ${schedule.endTime}",
-                  icon: Icons.access_time,
-                  color: AppColors.info,
-                  isPaid: false,
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          //====================================
-          // Payment Button - Always Visible
-          //====================================
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: _isPaymentProcessing ? null : _openPayment,
-              icon: _isPaymentProcessing
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Icon(
-                      isPaid ? Icons.check_circle : Icons.payments,
-                      color: Colors.white,
-                    ),
-              label: _isPaymentProcessing
-                  ? const Text("Loading...")
-                  : Text(
-                      isPaid ? "Payment Completed ✅" : "Collect Payment",
+                //====================================
+                // Collect Payment - always visible for every student
+                //====================================
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: _isPaymentProcessing ? null : _openPayment,
+                    icon: _isPaymentProcessing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.payments, color: Colors.white),
+                    label: Text(
+                      _isPaymentProcessing ? "Loading..." : "Collect Payment",
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isPaid ? AppColors.success : AppColors.primary,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: isPaid
-                    ? AppColors.success
-                    : AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppColors.radiusMedium,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: AppColors.primary.withOpacity(0.7),
+                      disabledForegroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppColors.radiusMedium,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 10),
+
+                // Next student
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton.icon(
+                    onPressed: _isPaymentProcessing ? null : _resetForNextScan,
+                    icon: Icon(
+                      _isManualInputMode ? Icons.edit : Icons.qr_code_scanner,
+                    ),
+                    label: Text(
+                      _isManualInputMode ? "Enter Next Code" : "Scan Next",
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppColors.radiusMedium,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  //---------------------------------------
+  // Current Month Payment Banner
+  //---------------------------------------
+
+  Widget _buildPaymentStatusBanner(_PaymentStatus status) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: status.color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: status.color, width: 1.5),
+      ),
+      child: Row(
+        children: [
+          Icon(status.icon, color: status.color, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  status.title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: status.color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  status.message,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.dark,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// "2026-10" -> "Oct 2026". Returns the input if it can't parse.
+  String _formatMonth(String value) {
+    final date = DateTime.tryParse(value.length == 7 ? '$value-01' : value);
+    if (date == null) return value;
+    return DateFormat('MMM yyyy').format(date);
   }
 
   //---------------------------------------
@@ -1527,14 +1585,16 @@ class _SummaryCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  final bool isPaid;
+
+  /// Draws a thick coloured border and tinted background.
+  final bool highlighted;
 
   const _SummaryCard({
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
-    this.isPaid = false,
+    this.highlighted = false,
   });
 
   @override
@@ -1544,7 +1604,7 @@ class _SummaryCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isPaid ? AppColors.successLight : Colors.white,
+        color: highlighted ? color.withOpacity(0.08) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1554,8 +1614,8 @@ class _SummaryCard extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: isPaid ? AppColors.success : color.withOpacity(0.15),
-          width: isPaid ? 2 : 1,
+          color: highlighted ? color : color.withOpacity(0.15),
+          width: highlighted ? 2 : 1,
         ),
       ),
       child: Column(
@@ -1564,14 +1624,8 @@ class _SummaryCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 14,
-            backgroundColor: (isPaid ? AppColors.success : color).withOpacity(
-              0.12,
-            ),
-            child: Icon(
-              icon,
-              color: isPaid ? AppColors.success : color,
-              size: 16,
-            ),
+            backgroundColor: color.withOpacity(0.12),
+            child: Icon(icon, color: color, size: 16),
           ),
           const SizedBox(height: 6),
           Text(
@@ -1579,7 +1633,7 @@ class _SummaryCard extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
-              color: isPaid ? AppColors.success : color,
+              color: color,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1729,6 +1783,83 @@ class _ScanErrorInfo {
       '',
       Icons.error_outline,
       AppColors.danger,
+    );
+  }
+}
+
+
+/// This month's payment state for the scanned class.
+class _PaymentStatus {
+  final String title;
+  final String shortLabel;
+  final String message;
+  final IconData icon;
+  final Color color;
+
+  const _PaymentStatus({
+    required this.title,
+    required this.shortLabel,
+    required this.message,
+    required this.icon,
+    required this.color,
+  });
+
+  factory _PaymentStatus.from(AttendanceDataModel data) {
+    final current = data.currentMonthPayment;
+    final now = DateTime.now();
+
+    final monthLabel = (current != null && current.monthLabel.isNotEmpty)
+        ? current.monthLabel
+        : DateFormat('MMMM yyyy').format(now);
+
+    final isFreeCard = data.enrollment.isFreeCard || (current?.isFreeCard ?? false);
+
+    if (isFreeCard) {
+      return _PaymentStatus(
+        title: 'FREE CARD',
+        shortLabel: 'FREE CARD',
+        message: 'No payment needed for $monthLabel.',
+        icon: Icons.card_giftcard,
+        color: AppColors.warning,
+      );
+    }
+
+    final bool isPaid;
+
+    if (current != null) {
+      isPaid = current.isPaid;
+    } else {
+      // Older server without current_month_payment: use the last payment,
+      // but only if it is for this month.
+      final last = data.lastPayment;
+      final thisMonth = DateFormat('yyyy-MM').format(now);
+      final status = last?.status.toLowerCase() ?? '';
+
+      isPaid = last != null &&
+          last.paymentMonth.startsWith(thisMonth) &&
+          (status == 'completed' || status == 'paid');
+    }
+
+    if (isPaid) {
+      final receipt = current?.receiptNumber ?? '';
+
+      return _PaymentStatus(
+        title: 'PAID',
+        shortLabel: 'PAID',
+        message: receipt.isNotEmpty
+            ? '$monthLabel fee paid. Receipt: $receipt'
+            : '$monthLabel fee paid.',
+        icon: Icons.check_circle,
+        color: AppColors.success,
+      );
+    }
+
+    return _PaymentStatus(
+      title: 'NOT PAID',
+      shortLabel: 'NOT PAID',
+      message: '$monthLabel fee is not paid. Collect the payment.',
+      icon: Icons.cancel,
+      color: AppColors.danger,
     );
   }
 }
