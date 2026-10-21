@@ -6,6 +6,7 @@ import '../../../data/models/image_upload/image_upload_request_model.dart';
 import '../../../data/models/image_upload/image_upload_response_model.dart';
 import '../../../domain/usecases/update_image_usecase.dart';
 import '../../../domain/usecases/upload_image_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'image_upload_event.dart';
 part 'image_upload_state.dart';
@@ -32,7 +33,7 @@ class ImageUploadBloc extends Bloc<ImageUploadEvent, ImageUploadState> {
       final result = await uploadImageUsecase(event.request);
       emit(ImageUploadSuccess(result));
     } catch (e) {
-      emit(ImageUploadError(e.toString()));
+      emit(ImageUploadError(friendlyError(e)));
     }
   }
 
@@ -46,7 +47,7 @@ class ImageUploadBloc extends Bloc<ImageUploadEvent, ImageUploadState> {
       final result = await updateImageUseCase(event.request);
       emit(ImageUpdateSuccess(result));
     } catch (e) {
-      emit(ImageUploadError(e.toString()));
+      emit(ImageUploadError(friendlyError(e)));
     }
   }
 }

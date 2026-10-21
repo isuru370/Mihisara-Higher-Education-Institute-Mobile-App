@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../students/data/models/student_search_model/read_student_response_model.dart';
 import '../../../../students/domain/usecases/read_student_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'read_student_event.dart';
 part 'read_student_state.dart';
@@ -23,7 +24,7 @@ class ReadStudentBloc extends Bloc<ReadStudentEvent, ReadStudentState> {
       final result = await readStudentUseCase(qrCode: event.qrCode);
       emit(ReadStudentLoaded(response: result));
     } catch (e) {
-      emit(ReadStudentError(e.toString()));
+      emit(ReadStudentError(friendlyError(e)));
     }
   }
 }

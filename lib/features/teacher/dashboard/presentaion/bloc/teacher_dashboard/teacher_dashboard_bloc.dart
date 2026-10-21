@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/teacher_dashboard_model.dart';
 import '../../../domain/repositories/usecases/get_teacher_dashboard.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'teacher_dashboard_event.dart';
 part 'teacher_dashboard_state.dart';
@@ -27,7 +28,7 @@ class TeacherDashboardBloc
 
       emit(TeacherDashboardSuccess(dashboard: dashboard));
     } catch (e) {
-      emit(TeacherDashboardFailure(message: e.toString()));
+      emit(TeacherDashboardFailure(message: friendlyError(e)));
     }
   }
 }

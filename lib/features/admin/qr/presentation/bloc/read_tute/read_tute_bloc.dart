@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/model/read_tute/read_tute_request_model.dart';
 import '../../../data/model/read_tute/read_tute_response_model.dart';
 import '../../../domain/usecases/read_tute_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'read_tute_event.dart';
 part 'read_tute_state.dart';
@@ -28,7 +29,7 @@ class ReadTuteBloc extends Bloc<ReadTuteEvent, ReadTuteState> {
 
       emit(ReadTuteSuccess(response: result));
     } catch (e) {
-      emit(ReadTuteFailure(message: e.toString()));
+      emit(ReadTuteFailure(message: friendlyError(e)));
     }
   }
 }

@@ -12,6 +12,7 @@ import '../../../domain/usecase/create_student_class_enrollment_usecase.dart';
 import '../../../domain/usecase/deactivate_enrollment_usecase.dart';
 import '../../../domain/usecase/get_classes_by_grade_usecase.dart';
 import '../../../domain/usecase/toggle_class_status_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'class_room_event.dart';
 part 'class_room_state.dart';
@@ -36,7 +37,7 @@ class ClassRoomBloc extends Bloc<ClassRoomEvent, ClassRoomState> {
 
         emit(ClassRoomLoaded(result));
       } catch (e) {
-        emit(ClassRoomError(e.toString()));
+        emit(ClassRoomError(friendlyError(e)));
       }
     });
 
@@ -54,7 +55,7 @@ class ClassRoomBloc extends Bloc<ClassRoomEvent, ClassRoomState> {
           emit(ClassRoomCreateError(result.message ?? 'Enrollment failed'));
         }
       } catch (e) {
-        emit(ClassRoomCreateError(e.toString()));
+        emit(ClassRoomCreateError(friendlyError(e)));
       }
     });
 
@@ -74,7 +75,7 @@ class ClassRoomBloc extends Bloc<ClassRoomEvent, ClassRoomState> {
           emit(ClassRoomStatusToggleError(result.message));
         }
       } catch (e) {
-        emit(ClassRoomStatusToggleError(e.toString()));
+        emit(ClassRoomStatusToggleError(friendlyError(e)));
       }
     });
     on<DeactivateEnrollmentEvent>((event, emit) async {
@@ -91,7 +92,7 @@ class ClassRoomBloc extends Bloc<ClassRoomEvent, ClassRoomState> {
           emit(ClassRoomDeactivateError(result.message));
         }
       } catch (e) {
-        emit(ClassRoomDeactivateError(e.toString()));
+        emit(ClassRoomDeactivateError(friendlyError(e)));
       }
     });
   }

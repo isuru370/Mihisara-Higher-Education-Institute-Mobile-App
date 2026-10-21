@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/model/institute_hall_model.dart';
 import '../../../domain/usecase/fetch_institute_hall.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'institute_hall_event.dart';
 part 'institute_hall_state.dart';
@@ -33,7 +34,7 @@ class InstituteHallBloc
       );
     } catch (e) {
       emit(
-        InstituteHallError(e.toString()),
+        InstituteHallError(friendlyError(e)),
       );
     }
   }

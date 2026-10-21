@@ -16,6 +16,7 @@ import '../../../domain/usecase/attendance_schedule_usecase.dart';
 import '../../../domain/usecase/cancel_class_schedule_usecase.dart';
 import '../../../domain/usecase/fetch_class_schedule_usecase.dart';
 import '../../../domain/usecase/update_class_schedule_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'class_schedule_event.dart';
 part 'class_schedule_state.dart';
@@ -52,7 +53,7 @@ class ClassScheduleBloc extends Bloc<ClassScheduleEvent, ClassScheduleState> {
 
       emit(ClassScheduleLoaded(response));
     } catch (e) {
-      emit(ClassScheduleError(e.toString()));
+      emit(ClassScheduleError(friendlyError(e)));
     }
   }
 
@@ -67,7 +68,7 @@ class ClassScheduleBloc extends Bloc<ClassScheduleEvent, ClassScheduleState> {
 
       emit(AttendanceScheduleLoaded(response));
     } catch (e) {
-      emit(ClassScheduleError(e.toString()));
+      emit(ClassScheduleError(friendlyError(e)));
     }
   }
 
@@ -82,7 +83,7 @@ class ClassScheduleBloc extends Bloc<ClassScheduleEvent, ClassScheduleState> {
 
       emit(AddNewDaySuccess(response));
     } catch (e) {
-      emit(ClassScheduleError(e.toString()));
+      emit(ClassScheduleError(friendlyError(e)));
     }
   }
 
@@ -97,7 +98,7 @@ class ClassScheduleBloc extends Bloc<ClassScheduleEvent, ClassScheduleState> {
 
       emit(UpdateClassScheduleSuccess(response));
     } catch (e) {
-      emit(ClassScheduleError(e.toString()));
+      emit(ClassScheduleError(friendlyError(e)));
     }
   }
 
@@ -112,7 +113,7 @@ class ClassScheduleBloc extends Bloc<ClassScheduleEvent, ClassScheduleState> {
 
       emit(CancelClassScheduleSuccess(response));
     } catch (e) {
-      emit(ClassScheduleError(e.toString()));
+      emit(ClassScheduleError(friendlyError(e)));
     }
   }
 }

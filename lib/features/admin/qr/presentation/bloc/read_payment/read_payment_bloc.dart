@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/model/read_payment/read_payments_response_model.dart';
 import '../../../domain/usecases/read_payment_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'read_payment_event.dart';
 part 'read_payment_state.dart';
@@ -31,7 +32,7 @@ class ReadPaymentBloc extends Bloc<ReadPaymentEvent, ReadPaymentState> {
 
       emit(ReadPaymentLoaded(result));
     } catch (e) {
-      emit(ReadPaymentError(message: e.toString()));
+      emit(ReadPaymentError(message: friendlyError(e)));
     }
   }
 

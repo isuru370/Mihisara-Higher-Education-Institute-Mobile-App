@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/model/daily_attendance_details_request_model.dart';
 import '../../../data/model/daily_attendance_details_response_model.dart';
 import '../../../domain/usecase/get_daily_attendance_details_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 
 part 'daily_attendance_details_event.dart';
@@ -39,7 +40,7 @@ class DailyAttendanceDetailsBloc extends Bloc<
       emit(DailyAttendanceDetailsLoaded(result));
 
     } catch (e) {
-      emit(DailyAttendanceDetailsError(e.toString()));
+      emit(DailyAttendanceDetailsError(friendlyError(e)));
     }
   }
 }

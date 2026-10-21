@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nexorait_education_app/features/admin/student_grade/data/models/student_grade_model.dart';
 
 import '../../../domain/usecases/student_grade_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'student_grade_event.dart';
 part 'student_grade_state.dart';
@@ -26,7 +27,7 @@ class StudentGradeBloc extends Bloc<StudentGradeEvent, StudentGradeState> {
 
       emit(StudentGradeLoaded(response.studentGradeList));
     } catch (e) {
-      emit(StudentGradeError(e.toString()));
+      emit(StudentGradeError(friendlyError(e)));
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/model/teacher_students_model.dart';
 import '../../../domain/usecase/get_teacher_students.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 
 
@@ -38,10 +39,7 @@ class TeacherStudentsBloc
     } catch (e) {
       emit(
         TeacherStudentsError(
-          message: e.toString().replaceFirst(
-            'Exception: ',
-            '',
-          ),
+          message: friendlyError(e),
         ),
       );
     }

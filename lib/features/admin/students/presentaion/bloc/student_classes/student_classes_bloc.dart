@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/student_classes_model/student_class_response_model.dart';
 import '../../../data/models/student_classes_model/student_request_model.dart';
 import '../../../domain/usecases/student_classes_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'student_classes_event.dart';
 part 'student_classes_state.dart';
@@ -31,7 +32,7 @@ class StudentClassesBloc
 
       emit(StudentClassesLoaded(response: response));
     } catch (e) {
-      emit(StudentClassesError(e.toString()));
+      emit(StudentClassesError(friendlyError(e)));
     }
   }
 }
