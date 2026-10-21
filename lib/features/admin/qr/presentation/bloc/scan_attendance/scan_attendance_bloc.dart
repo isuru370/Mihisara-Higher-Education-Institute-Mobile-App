@@ -37,6 +37,7 @@ class ScanAttendanceBloc
         requestModel: ScanAttendanceRequestModel(
           code: event.code,
           markMethod: event.markMethod,
+          classScheduleId: event.classScheduleId,
         ),
       );
 
