@@ -54,6 +54,9 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
   ScanAttendanceResponseModel? _scanResponse;
   String? _errorMessage;
 
+  /// HTTP status of the last failed scan (null = server not reached).
+  int? _errorStatusCode;
+
   /// Code of the last scanned student. Kept so we can scan again with the
   /// chosen class when the student has more than one class open.
   String? _pendingCode;
@@ -182,6 +185,7 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
       _isMarkingAttendance = true;
       _attendanceSuccess = false;
       _errorMessage = null;
+      _errorStatusCode = null;
     });
 
     context.read<ScanAttendanceBloc>().add(ScanAttendanceRequested(code: code));
@@ -199,6 +203,7 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
       _isMarkingAttendance = true;
       _attendanceSuccess = false;
       _errorMessage = null;
+      _errorStatusCode = null;
     });
 
     context.read<ScanAttendanceBloc>().add(
@@ -209,11 +214,15 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
     );
   }
 
-  void _cancelClassSelection() {
+  void _cancelClassSelection() => _resetForNextScan();
+
+  /// Clears the last result/error and gets ready for the next student.
+  void _resetForNextScan() {
     setState(() {
       _scanResponse = null;
       _pendingCode = null;
       _errorMessage = null;
+      _errorStatusCode = null;
       _isScanning = false;
       _isMarkingAttendance = false;
       _attendanceSuccess = false;
@@ -399,11 +408,16 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
             }
 
             if (state is ScanAttendanceFailure) {
+              // Keep _isScanning true so the camera waits until the staff
+              // member has read the message and taps "Scan Next".
               setState(() {
                 _isMarkingAttendance = false;
-                _isScanning = false;
+                _isScanning = true;
+                _attendanceSuccess = false;
                 _errorMessage = state.message;
+                _errorStatusCode = state.statusCode;
               });
+              _showBottomSheet();
             }
           },
         ),
@@ -680,6 +694,28 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
       );
     }
 
+    if (_errorMessage != null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.danger.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.cancel, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text(
+              "Attendance NOT marked",
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (_attendanceSuccess) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -761,52 +797,7 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
 
     // Error State
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, color: AppColors.danger, size: 50),
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: AppColors.danger),
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _errorMessage = null;
-                    _isScanning = false;
-                    _isMarkingAttendance = false;
-                    _attendanceSuccess = false;
-                    _scanResponse = null;
-                    _pendingCode = null;
-                    _studentCodeController.clear();
-                  });
-
-                  if (_isManualInputMode) {
-                    Future.delayed(const Duration(milliseconds: 150), () {
-                      if (!mounted) return;
-
-                      _studentCodeFocusNode.requestFocus();
-                    });
-                  } else {
-                    WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      if (!mounted) return;
-                      await _restartScanner();
-                    });
-                  }
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text("Try Again"),
-              ),
-            ],
-          ),
-        ),
-      );
+      return _buildErrorPanel();
     }
 
     // Manual Input Mode - Show Text Field
@@ -1035,6 +1026,106 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  //---------------------------------------
+  // Error Panel
+  //---------------------------------------
+
+  Widget _buildErrorPanel() {
+    final info = _ScanErrorInfo.from(_errorMessage!, _errorStatusCode);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: info.color.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(info.icon, color: info.color, size: 40),
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            info.title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              color: info.color,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          const Text(
+            "Attendance was not marked",
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+
+          const SizedBox(height: 14),
+
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceSecondary,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.dark,
+                  ),
+                ),
+                if (info.hint.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    info.hint,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _resetForNextScan,
+              icon: Icon(
+                _isManualInputMode ? Icons.edit : Icons.qr_code_scanner,
+              ),
+              label: Text(
+                _isManualInputMode ? "Enter Next Code" : "Scan Next",
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1504,6 +1595,114 @@ class _SummaryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+
+/// Turns a scan error into a short title, an icon/colour and a hint telling
+/// the staff member what to do next. The server message is always shown too.
+class _ScanErrorInfo {
+  final String title;
+  final String hint;
+  final IconData icon;
+  final Color color;
+
+  const _ScanErrorInfo(this.title, this.hint, this.icon, this.color);
+
+  factory _ScanErrorInfo.from(String message, int? statusCode) {
+    final m = message.toLowerCase();
+
+    if (statusCode == null &&
+        (m.contains('reach the server') || m.contains('too long'))) {
+      return const _ScanErrorInfo(
+        'No connection',
+        'Check Wi-Fi or mobile data, then scan again.',
+        Icons.wifi_off,
+        AppColors.danger,
+      );
+    }
+
+    if (statusCode == 401) {
+      return const _ScanErrorInfo(
+        'Session expired',
+        'Log out and log in again, then scan.',
+        Icons.lock_outline,
+        AppColors.danger,
+      );
+    }
+
+    if (statusCode == 409 || m.contains('already')) {
+      return const _ScanErrorInfo(
+        'Already marked',
+        "This student's attendance for this class is already recorded.",
+        Icons.how_to_reg,
+        AppColors.warning,
+      );
+    }
+
+    if (m.contains('opens at')) {
+      return const _ScanErrorInfo(
+        'Too early',
+        'Attendance opens one hour before the class starts.',
+        Icons.schedule,
+        AppColors.warning,
+      );
+    }
+
+    if (m.contains('finished') || m.contains('ended')) {
+      return const _ScanErrorInfo(
+        'Classes finished',
+        "All of today's classes for this student have ended.",
+        Icons.event_busy,
+        AppColors.warning,
+      );
+    }
+
+    if (m.contains('not enrolled') || m.contains('enrollment not found')) {
+      return const _ScanErrorInfo(
+        'Not enrolled in a class',
+        'Enroll the student in the class first, then scan again.',
+        Icons.person_off_outlined,
+        AppColors.danger,
+      );
+    }
+
+    if (m.contains('no classes') || m.contains('no class')) {
+      return const _ScanErrorInfo(
+        'No class today',
+        "This student has no class scheduled for today.",
+        Icons.event_busy,
+        AppColors.warning,
+      );
+    }
+
+    if (m.contains('not open')) {
+      return const _ScanErrorInfo(
+        'Class not open now',
+        'Scan again and choose a class that is on now.',
+        Icons.schedule,
+        AppColors.warning,
+      );
+    }
+
+    if ((m.contains('student') && m.contains('not found')) ||
+        m.contains('qr') ||
+        m.contains('inactive') ||
+        m.contains('disabled')) {
+      return const _ScanErrorInfo(
+        'Student not found',
+        'Check the QR card or the student code.',
+        Icons.badge_outlined,
+        AppColors.danger,
+      );
+    }
+
+    return const _ScanErrorInfo(
+      'Cannot mark attendance',
+      '',
+      Icons.error_outline,
+      AppColors.danger,
     );
   }
 }
