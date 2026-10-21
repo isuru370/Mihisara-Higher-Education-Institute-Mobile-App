@@ -61,10 +61,19 @@ class ScanAttendanceRemoteDatasource {
         ? decodedBody['message']?.toString()
         : null;
 
+    if (message == null || message.isEmpty) {
+      throw ScanAttendanceException(
+        response.statusCode == 404
+            ? 'The attendance service was not found on the server. '
+                'Update the server, then try again.'
+            : 'Failed to mark attendance (server error '
+                '${response.statusCode}).',
+        statusCode: response.statusCode,
+      );
+    }
+
     throw ScanAttendanceException(
-      (message == null || message.isEmpty)
-          ? 'Failed to mark attendance.'
-          : message,
+      message,
       statusCode: response.statusCode,
     );
   }

@@ -1623,6 +1623,16 @@ class _ScanErrorInfo {
       );
     }
 
+    if (m.contains('attendance service was not found')) {
+      return const _ScanErrorInfo(
+        'Server not updated',
+        'The server does not have the attendance service yet. '
+            'Ask the system admin to update it.',
+        Icons.cloud_off,
+        AppColors.danger,
+      );
+    }
+
     if (statusCode == 401) {
       return const _ScanErrorInfo(
         'Session expired',
@@ -1686,10 +1696,26 @@ class _ScanErrorInfo {
       );
     }
 
+    if (m.contains('inactive') || m.contains('disabled')) {
+      return const _ScanErrorInfo(
+        'Student inactive',
+        'This student is inactive or disabled. Check the student in the system.',
+        Icons.block,
+        AppColors.danger,
+      );
+    }
+
+    if (m.contains('expired')) {
+      return const _ScanErrorInfo(
+        'QR code expired',
+        'This temporary QR card has expired. Issue a new card.',
+        Icons.qr_code_2,
+        AppColors.danger,
+      );
+    }
+
     if ((m.contains('student') && m.contains('not found')) ||
-        m.contains('qr') ||
-        m.contains('inactive') ||
-        m.contains('disabled')) {
+        m.contains('qr')) {
       return const _ScanErrorInfo(
         'Student not found',
         'Check the QR card or the student code.',
