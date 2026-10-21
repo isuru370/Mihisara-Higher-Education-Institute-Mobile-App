@@ -67,10 +67,16 @@ class _PaymentPageState extends State<PaymentPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: Colors.orange,
-                content: Text('Receipt print failed: $e'),
+                content: Text(
+                  'Payment saved, but the receipt did not print: '
+                  '${e.toString().replaceFirst('Exception: ', '')}',
+                ),
               ),
             );
           }
+
+          // Printing can take a while; the page may be closed by now.
+          if (!mounted) return;
 
           setState(() {
             _isSubmitting = false;
@@ -977,6 +983,10 @@ class _PaymentPageState extends State<PaymentPage> {
   // ==========================================================================
 
   void _submitBulkPayments(List<dynamic> classes) {
+    // A second tap before the bloc reports "loading" must not send the
+    // same payments twice.
+    if (_isSubmitting) return;
+
     final selectedPayments = classes
         .where((item) => _selectedEnrollmentIds.contains(item.enrollmentId))
         .where((item) => item.isFreeCard == false)
@@ -1051,6 +1061,8 @@ class _PaymentPageState extends State<PaymentPage> {
         );
       }).toList(),
     );
+
+    setState(() => _isSubmitting = true);
 
     context.read<MarkPaymentBloc>().add(
       MarkPaymentRequested(requestModel: request),

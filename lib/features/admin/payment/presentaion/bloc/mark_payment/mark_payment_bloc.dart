@@ -63,7 +63,9 @@ class MarkPaymentBloc extends Bloc<MarkPaymentEvent, MarkPaymentState> {
     } catch (e, stackTrace) {
       debugPrint('TodayPayments Error: $e');
       debugPrint('StackTrace: $stackTrace');
-      //emit(TodayPaymentsError('Something went wrong while fetching today payments.'));
+
+      // Without this the Today Payments screen kept loading forever.
+      emit(TodayPaymentsError(message: _extractErrorMessage(e)));
     }
   }
 
