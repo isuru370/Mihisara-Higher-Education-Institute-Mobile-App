@@ -8,6 +8,7 @@ import '../../data/models/today_payments/today_payment_item_model.dart';
 import '../../data/models/today_payments/today_payments_request_model.dart';
 import '../bloc/mark_payment/mark_payment_bloc.dart';
 import 'utils/payment_receipt_print.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class TodayPaymentPage extends StatefulWidget {
   const TodayPaymentPage({super.key});
@@ -1177,7 +1178,7 @@ class _TodayPaymentPageState extends State<TodayPaymentPage> {
     }
 
     try {
-      final date = DateTime.parse(value);
+      final date = AppDateTime.tryParseServer(value)!;
 
       return DateFormat('yyyy / MM').format(date);
     } catch (_) {
@@ -1202,7 +1203,7 @@ class _TodayPaymentPageState extends State<TodayPaymentPage> {
     }
 
     try {
-      final date = DateTime.parse(value.replaceFirst(' ', 'T'));
+      final date = AppDateTime.tryParseServer(value)!;
 
       return DateFormat('yyyy-MM-dd HH:mm').format(date);
     } catch (_) {

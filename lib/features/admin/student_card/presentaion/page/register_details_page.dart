@@ -7,6 +7,7 @@ import '../../data/model/current_card_model.dart';
 import '../../data/model/student_card_model.dart';
 import '../../data/model/student_card_response_model.dart';
 import '../../data/model/student_mini_model.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class RegisterDetailsPage extends StatelessWidget {
   final String qrCode;
@@ -735,7 +736,7 @@ class RegisterDetailsPage extends StatelessWidget {
   // Helper Methods
   String _formatDate(String dateTimeStr) {
     try {
-      final dateTime = DateTime.parse(dateTimeStr.replaceAll(' ', 'T'));
+      final dateTime = AppDateTime.tryParseServer(dateTimeStr)!;
       return DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
     } catch (e) {
       return dateTimeStr;

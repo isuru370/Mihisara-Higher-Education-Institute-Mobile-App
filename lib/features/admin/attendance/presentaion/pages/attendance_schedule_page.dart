@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../class_schedule/data/model/attendance_schedule/attendance_schedule_request_model.dart';
 import '../../../class_schedule/presentaion/bloc/class_schedule/class_schedule_bloc.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class AttendanceSchedulePage extends StatefulWidget {
   final int studentClassId;
@@ -486,7 +487,11 @@ class _AttendanceSchedulePageState extends State<AttendanceSchedulePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item.classDate ?? 'No Date',
+                            AppDateTime.formatServer(
+                              item.classDate,
+                              'EEE, dd MMM yyyy',
+                              fallback: 'No Date',
+                            ),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../data/models/attendance_history/attendance_history_request_model.dart';
 import '../bloc/attendance/attendance_bloc.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class AttendanceHistoryPage extends StatefulWidget {
   final int studentId;
@@ -37,7 +38,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
 
   String _formatDate(String value) {
     try {
-      return DateFormat('yyyy MMM dd').format(DateTime.parse(value));
+      return DateFormat('yyyy MMM dd').format(AppDateTime.tryParseServer(value)!);
     } catch (_) {
       return value;
     }

@@ -7,6 +7,7 @@ import '../../../student_classes/presentaion/bloc/class_room/class_room_bloc.dar
 import '../../data/models/attendance_report/student_data.dart';
 import '../../data/models/delete_attendance/delete_attendance_request_model.dart';
 import '../bloc/attendance/attendance_bloc.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class StudentAttendanceCard extends StatelessWidget {
   final StudentData student;
@@ -859,7 +860,7 @@ class StudentAttendanceCard extends StatelessWidget {
 
   String _formatTime(String dateTime) {
     try {
-      final date = DateTime.parse(dateTime);
+      final date = AppDateTime.tryParseServer(dateTime)!;
       final hour = date.hour;
       final minute = date.minute.toString().padLeft(2, '0');
       final period = hour >= 12 ? 'PM' : 'AM';
@@ -872,7 +873,7 @@ class StudentAttendanceCard extends StatelessWidget {
 
   String _formatPaymentMonth(String dateTime) {
     try {
-      final date = DateTime.parse(dateTime);
+      final date = AppDateTime.tryParseServer(dateTime)!;
       const months = [
         'January',
         'February',
@@ -895,7 +896,7 @@ class StudentAttendanceCard extends StatelessWidget {
 
   String _formatPaymentDate(String dateTime) {
     try {
-      final date = DateTime.parse(dateTime);
+      final date = AppDateTime.tryParseServer(dateTime)!;
       return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return dateTime;

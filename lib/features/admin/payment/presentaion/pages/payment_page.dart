@@ -11,6 +11,7 @@ import '../../data/models/mark_payment_request_model.dart';
 import '../../data/models/mark_payment_response_model.dart';
 import '../bloc/mark_payment/mark_payment_bloc.dart';
 import 'utils/payment_receipt_print.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class PaymentPage extends StatefulWidget {
   final String? markMethod;
@@ -583,13 +584,12 @@ class _PaymentPageState extends State<PaymentPage> {
       try {
         final paymentMonth = lastPayment.paymentMonth.toString();
 
-        DateTime lastMonth;
-
-        if (paymentMonth.length >= 7) {
-          lastMonth = DateTime.parse('${paymentMonth.substring(0, 7)}-01');
-        } else {
-          lastMonth = DateTime.parse('$paymentMonth-01');
-        }
+        // "2026-10", "2026-10-01" or a UTC instant such as
+        // "2026-09-30T18:30:00Z" (= 1 Oct in Sri Lanka).
+        final lastMonth = AppDateTime.tryParseServer(
+              paymentMonth.length == 7 ? '$paymentMonth-01' : paymentMonth,
+            ) ??
+            DateTime.parse('${paymentMonth.substring(0, 7)}-01');
 
         // Always select NEXT month
         return DateTime(lastMonth.year, lastMonth.month + 1, 1);
@@ -1209,7 +1209,9 @@ String _formatAmount(dynamic value) {
 
 String _formatPaymentMonth(String value) {
   try {
-    final date = DateTime.parse(value);
+    final date = AppDateTime.tryParseServer(
+      value.length == 7 ? '$value-01' : value,
+    )!;
 
     return '${date.year} / ${date.month.toString().padLeft(2, '0')}';
   } catch (e) {
@@ -1235,11 +1237,10 @@ String _getCurrentMonthPaymentStatus(dynamic payment) {
   }
 
   try {
-    final paidDate = DateTime.parse(
-      paymentMonth.length >= 7
-          ? '${paymentMonth.substring(0, 7)}-01'
-          : '$paymentMonth-01',
-    );
+    final paidDate = AppDateTime.tryParseServer(
+          paymentMonth.length == 7 ? '$paymentMonth-01' : paymentMonth,
+        ) ??
+        DateTime.parse('${paymentMonth.substring(0, 7)}-01');
 
     final now = DateTime.now();
 
