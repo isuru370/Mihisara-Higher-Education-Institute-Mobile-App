@@ -18,7 +18,11 @@ final class AuthSuccess extends AuthState {
   const AuthSuccess(this.token, this.userModel);
 
   @override
-  List<Object?> get props => [token,userModel];
+  List<Object?> get props => [token, userModel];
+
+  // Never print the token (Bloc observer / logs use toString).
+  @override
+  String toString() => 'AuthSuccess(user: ${userModel.email})';
 }
 
 final class AuthFailure extends AuthState {

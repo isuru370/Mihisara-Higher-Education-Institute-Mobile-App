@@ -18,8 +18,8 @@ class AuthRemoteDataSource {
         body: jsonEncode(request.toJson()),
       );
 
+      // Status only: the body contains the login token.
       debugPrint('LOGIN RESPONSE CODE: ${response.statusCode}');
-      debugPrint('LOGIN RESPONSE BODY: ${response.body}');
 
       Map<String, dynamic> data = {};
       try {

@@ -1,9 +1,21 @@
-class ApiConstants {
-  static const String baseUrl = 'http://192.168.141.230:8000';
-  static const String apiUrl = '$baseUrl/api';
+import 'package:flutter/foundation.dart';
 
-  //http://10.239.47.230:8000
-  //https://mihisaraeducation.nexorait.lk
+class ApiConstants {
+  /// Live server, used by release builds (APK / app bundle).
+  static const String productionBaseUrl = 'https://mihisaraeducation.nexorait.lk';
+
+  /// Local development server, used by debug builds (`flutter run`).
+  static const String developmentBaseUrl = 'http://192.168.141.230:8000';
+
+  /// Release builds talk to production, debug builds to the local server.
+  /// Override either with:
+  ///   flutter run --dart-define=API_BASE_URL=http://10.239.47.230:8000
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: kReleaseMode ? productionBaseUrl : developmentBaseUrl,
+  );
+
+  static const String apiUrl = '$baseUrl/api';
 
   static const String login = '$apiUrl/login';
   static const String logout = '$apiUrl/logout';

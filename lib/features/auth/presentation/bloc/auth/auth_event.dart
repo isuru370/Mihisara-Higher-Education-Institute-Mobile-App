@@ -18,6 +18,10 @@ class LoginRequested extends AuthEvent {
 
   @override
   List<Object?> get props => [email, password];
+
+  // Never print the password (Bloc observer / logs use toString).
+  @override
+  String toString() => 'LoginRequested($email)';
 }
 
 class LogoutRequested extends AuthEvent {}
