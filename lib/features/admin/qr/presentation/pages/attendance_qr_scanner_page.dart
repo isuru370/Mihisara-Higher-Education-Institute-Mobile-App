@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/app_datetime.dart';
+import '../../data/model/scan_attendance_new/class_selection_model.dart';
 import '../../data/model/scan_attendance_new/scan_attendance_response_model.dart';
 import '../bloc/read_payment/read_payment_bloc.dart';
 import '../bloc/scan_attendance/scan_attendance_bloc.dart';
@@ -52,6 +53,10 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
 
   ScanAttendanceResponseModel? _scanResponse;
   String? _errorMessage;
+
+  /// Code of the last scanned student. Kept so we can scan again with the
+  /// chosen class when the student has more than one class open.
+  String? _pendingCode;
 
   //---------------------------------------
   // Manual Input
@@ -172,6 +177,7 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
 
   void _processStudentCode(String code) {
     setState(() {
+      _pendingCode = code;
       _isScanning = true;
       _isMarkingAttendance = true;
       _attendanceSuccess = false;
@@ -179,6 +185,67 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
     });
 
     context.read<ScanAttendanceBloc>().add(ScanAttendanceRequested(code: code));
+  }
+
+  //---------------------------------------
+  // Class Selection (more than one class open)
+  //---------------------------------------
+
+  void _selectClass(ClassOptionModel option) {
+    final code = _pendingCode;
+    if (code == null || option.alreadyMarked) return;
+
+    setState(() {
+      _isMarkingAttendance = true;
+      _attendanceSuccess = false;
+      _errorMessage = null;
+    });
+
+    context.read<ScanAttendanceBloc>().add(
+      ScanAttendanceRequested(
+        code: code,
+        classScheduleId: option.classScheduleId,
+      ),
+    );
+  }
+
+  void _cancelClassSelection() {
+    setState(() {
+      _scanResponse = null;
+      _pendingCode = null;
+      _errorMessage = null;
+      _isScanning = false;
+      _isMarkingAttendance = false;
+      _attendanceSuccess = false;
+      _studentCodeController.clear();
+    });
+
+    if (_isManualInputMode) {
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (!mounted) return;
+        _studentCodeFocusNode.requestFocus();
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await _restartScanner();
+      });
+    }
+  }
+
+  /// "16:30:00" -> "4:30 PM". Returns the input unchanged if it can't parse.
+  String _formatTime(String value) {
+    final parts = value.split(':');
+    if (parts.length < 2) return value;
+
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return value;
+
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final hour12 = hour % 12 == 0 ? 12 : hour % 12;
+
+    return '$hour12:${minute.toString().padLeft(2, '0')} $period';
   }
 
   //---------------------------------------
@@ -291,6 +358,20 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
             if (state is ScanAttendanceSuccess) {
               final response = state.response;
               final data = response.data;
+
+              // More than one class open: let the staff member choose.
+              // Nothing is marked yet, so keep _isScanning true to stop the
+              // camera from picking up another QR meanwhile.
+              if (response.requiresSelection && response.selection != null) {
+                setState(() {
+                  _scanResponse = response;
+                  _errorMessage = null;
+                  _isMarkingAttendance = false;
+                  _attendanceSuccess = false;
+                });
+                _showBottomSheet();
+                return;
+              }
 
               if (data == null) {
                 setState(() {
@@ -702,6 +783,7 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
                     _isMarkingAttendance = false;
                     _attendanceSuccess = false;
                     _scanResponse = null;
+                    _pendingCode = null;
                     _studentCodeController.clear();
                   });
 
@@ -758,8 +840,203 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
       );
     }
 
+    // Class Selection State
+    if (_scanResponse!.requiresSelection && _scanResponse!.selection != null) {
+      return _buildClassSelectionPanel(_scanResponse!.selection!);
+    }
+
     // Student Data State
     return _buildStudentPanel();
+  }
+
+  //---------------------------------------
+  // Class Selection Panel
+  //---------------------------------------
+
+  Widget _buildClassSelectionPanel(ClassSelectionModel selection) {
+    final student = selection.student;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.call_split, color: AppColors.warning, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    student.initialName,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.dark,
+                    ),
+                  ),
+                  Text(
+                    student.studentCode,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.warningLight,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Text(
+            "This student has more than one class right now. "
+            "Select the class the student came for.",
+            style: TextStyle(fontSize: 14, color: AppColors.dark),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        ...selection.options.map(_buildClassOptionCard),
+
+        const SizedBox(height: 8),
+
+        OutlinedButton.icon(
+          onPressed: _cancelClassSelection,
+          icon: const Icon(Icons.close),
+          label: const Text("Cancel"),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildClassOptionCard(ClassOptionModel option) {
+    final classInfo = option.studentClass;
+    final title = classInfo.subject.isNotEmpty
+        ? classInfo.subject
+        : classInfo.className;
+    final disabled = option.alreadyMarked;
+
+    final details = <String>[
+      if (classInfo.teacher.isNotEmpty) classInfo.teacher,
+      if (option.hall.isNotEmpty) option.hall,
+      if (classInfo.category.isNotEmpty) classInfo.category,
+    ].join('  •  ');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: disabled ? AppColors.surfaceSecondary : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: disabled ? null : () => _selectClass(option),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: disabled ? AppColors.border : AppColors.primary,
+                width: disabled ? 1 : 1.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: disabled
+                              ? AppColors.textMuted
+                              : AppColors.dark,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 15,
+                            color: disabled
+                                ? AppColors.textMuted
+                                : AppColors.info,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${_formatTime(option.startTime)} - "
+                            "${_formatTime(option.endTime)}",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: disabled
+                                  ? AppColors.textMuted
+                                  : AppColors.dark,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (details.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          details,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                disabled
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.successLight,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          "Already marked",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.success,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.primary,
+                      ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   //---------------------------------------
