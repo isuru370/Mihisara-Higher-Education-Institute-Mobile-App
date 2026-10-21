@@ -29,10 +29,14 @@ class ScanAttendanceSuccess extends ScanAttendanceState {
 class ScanAttendanceFailure extends ScanAttendanceState {
   final String message;
 
+  /// HTTP status from the server; null when the server could not be reached.
+  final int? statusCode;
+
   const ScanAttendanceFailure({
     required this.message,
+    this.statusCode,
   });
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
