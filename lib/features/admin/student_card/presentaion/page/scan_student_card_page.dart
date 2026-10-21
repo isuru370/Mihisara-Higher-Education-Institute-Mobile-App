@@ -230,15 +230,31 @@ class _ScanStudentCardPageState extends State<ScanStudentCardPage>
     return MultiBlocListener(
       listeners: [
         BlocListener<StudentCardBloc, StudentCardState>(
+          // The bloc is shared with the details / re-assign pages pushed on
+          // top of this one; only react while this page is visible, or a
+          // re-assign error showed twice and restarted the camera behind.
           listenWhen: (previous, current) =>
-              current is StudentCardLoaded ||
-              current is SearchStudentForAssignmentLoaded ||
-              current is StudentCardError,
+              (ModalRoute.of(context)?.isCurrent ?? true) &&
+              (current is StudentCardLoaded ||
+                  current is SearchStudentForAssignmentLoaded ||
+                  current is StudentCardError),
           listener: (context, state) async {
             if (state is StudentCardLoaded) {
               await _safeStopScanner();
 
               if (!mounted) return;
+
+              // status false with no student = "Card not found" /
+              // "Student not found": nothing to show on the details page.
+              if (!state.response.status && state.response.student == null) {
+                _showSnackBar(
+                  state.response.message.isNotEmpty
+                      ? state.response.message
+                      : 'Card not found.',
+                );
+                _resetScanner();
+                return;
+              }
 
               if (state.response.status) {
                 Navigator.pushNamed(

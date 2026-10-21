@@ -54,14 +54,15 @@ class _ReAssignCardPageState extends State<ReAssignCardPage> {
   }
 
   void _submitReAssign() {
-    final newQrCode = _newQrController.text.trim();
+    // Card QR codes are upper case (the server also upper-cases them).
+    final newQrCode = _newQrController.text.trim().toUpperCase();
 
     if (newQrCode.isEmpty) {
       _showError('Please enter the new QR code.');
       return;
     }
 
-    if (newQrCode.toUpperCase() == widget.oldQrCode.trim().toUpperCase()) {
+    if (newQrCode == widget.oldQrCode.trim().toUpperCase()) {
       _showError('New QR code cannot be the same as the old QR code.');
       return;
     }
@@ -71,7 +72,7 @@ class _ReAssignCardPageState extends State<ReAssignCardPage> {
     context.read<StudentCardBloc>().add(
       ReAssignStudentCardEvent(
         request: ReAssignRequestModel(
-          oldQrCode: widget.oldQrCode.trim(),
+          oldQrCode: widget.oldQrCode.trim().toUpperCase(),
           newQrCode: newQrCode,
           reason: _selectedReason,
           remarks: remarks.isEmpty ? null : remarks,
@@ -104,15 +105,24 @@ class _ReAssignCardPageState extends State<ReAssignCardPage> {
     return BlocListener<StudentCardBloc, StudentCardState>(
       listener: (context, state) {
         if (state is ReAssignStudentCardLoaded) {
+          final newCode = state.response.data?.qrCode ?? '';
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.response.message),
+              content: Text(
+                newCode.isNotEmpty
+                    ? '${state.response.message} New card: $newCode. '
+                        'Old card ${widget.oldQrCode} is now inactive.'
+                    : state.response.message,
+              ),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
             ),
           );
 
-          Navigator.pop(context);
+          // true = re-assigned; the details page behind this one shows the
+          // old card, so it closes too (see RegisterDetailsPage).
+          Navigator.pop(context, true);
         }
 
         if (state is StudentCardError) {
