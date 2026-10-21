@@ -29,26 +29,41 @@ class TodayPaymentsResponseModel {
     final meta =
         json['meta'] as Map<String, dynamic>? ?? {};
 
+    final items = (json['data'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .map(TodayPaymentItemModel.fromJson)
+        .toList();
+
+    // The server sends { success, date, count, data } with no summary, so
+    // the totals were always 0. Work them out from the rows when missing.
+    final summaryJson = json['summary'];
+
+    final summary = summaryJson is Map<String, dynamic>
+        ? TodayPaymentSummaryModel.fromJson(summaryJson)
+        : TodayPaymentSummaryModel(
+            paymentCount: items.length,
+            totalAmount: items.fold(0.0, (sum, item) => sum + item.amount),
+            totalDiscount: items.fold(
+              0.0,
+              (sum, item) => sum + item.discountAmount,
+            ),
+          );
+
     return TodayPaymentsResponseModel(
       success: json['success'] == true,
 
-      data: (json['data'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(TodayPaymentItemModel.fromJson)
-          .toList(),
+      data: items,
 
-      summary: TodayPaymentSummaryModel.fromJson(
-        json['summary'] as Map<String, dynamic>? ?? {},
-      ),
+      summary: summary,
 
-      date: filters['date']?.toString() ?? '',
+      date: (filters['date'] ?? json['date'])?.toString() ?? '',
 
       search: filters['search']?.toString(),
 
       total: int.tryParse(
-            meta['total']?.toString() ?? '0',
+            (meta['total'] ?? json['count'])?.toString() ?? '',
           ) ??
-          0,
+          items.length,
     );
   }
 }
