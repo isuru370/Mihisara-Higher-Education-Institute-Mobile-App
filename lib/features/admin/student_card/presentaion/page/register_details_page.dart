@@ -713,14 +713,21 @@ class RegisterDetailsPage extends StatelessWidget {
           ),
 
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(dialogContext);
 
-              Navigator.pushNamed(
+              final reAssigned = await Navigator.pushNamed(
                 context,
                 '/re-assign',
                 arguments: {'oldQrCode': card.qrCode},
               );
+
+              // This page was built from the old scan and still shows the
+              // old card as current. Go back to the scanner instead of
+              // showing stale data; scanning again shows the new card.
+              if (reAssigned == true && context.mounted) {
+                Navigator.pop(context);
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.danger,
