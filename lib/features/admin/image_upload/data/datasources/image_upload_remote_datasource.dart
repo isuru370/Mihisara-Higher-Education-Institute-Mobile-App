@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../../../../../core/network/api_http.dart' as http;
 // ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
 
@@ -20,6 +20,9 @@ class ImageUploadRemoteDatasource {
 
     final multipartRequest = http.MultipartRequest('POST', uri);
 
+    // Without this Laravel answers validation errors with an HTML redirect.
+    multipartRequest.headers['Accept'] = 'application/json';
+
     if (token != null && token.isNotEmpty) {
       multipartRequest.headers['Authorization'] = 'Bearer $token';
     }
@@ -32,10 +35,15 @@ class ImageUploadRemoteDatasource {
       ),
     );
 
-    final streamedResponse = await multipartRequest.send();
+    final streamedResponse = await http.sendMultipart(multipartRequest);
     final response = await http.Response.fromStream(streamedResponse);
 
-    final decoded = jsonDecode(response.body);
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(response.body);
+    } on FormatException {
+      throw Exception('Invalid server response (${response.statusCode}).');
+    }
 
     debugPrint('Response status: ${response.statusCode}');
     debugPrint('Response body: ${response.body}');
@@ -60,6 +68,9 @@ class ImageUploadRemoteDatasource {
 
     final multipartRequest = http.MultipartRequest('POST', uri);
 
+    // Without this Laravel answers validation errors with an HTML redirect.
+    multipartRequest.headers['Accept'] = 'application/json';
+
     if (token != null && token.isNotEmpty) {
       multipartRequest.headers['Authorization'] = 'Bearer $token';
     }
@@ -74,11 +85,16 @@ class ImageUploadRemoteDatasource {
       ),
     );
 
-    final streamedResponse = await multipartRequest.send();
+    final streamedResponse = await http.sendMultipart(multipartRequest);
 
     final response = await http.Response.fromStream(streamedResponse);
 
-    final decoded = jsonDecode(response.body);
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(response.body);
+    } on FormatException {
+      throw Exception('Invalid server response (${response.statusCode}).');
+    }
 
     debugPrint('Response status: ${response.statusCode}');
     debugPrint('Response body: ${response.body}');

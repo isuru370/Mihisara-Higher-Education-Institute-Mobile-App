@@ -5,6 +5,7 @@ import '../../../data/model/fetch_tute/fetch_tute_request_model.dart';
 import '../../../data/model/fetch_tute/student_tute_model.dart';
 import '../../../domain/usecase/create_tute_usecase.dart';
 import '../../../domain/usecase/get_student_history_tute_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'tute_event.dart';
 part 'tute_state.dart';
@@ -40,7 +41,7 @@ class TuteBloc extends Bloc<TuteEvent, TuteState> {
 
       emit(TuteCreateSuccess(response.message));
     } catch (e) {
-      emit(TuteError(e.toString()));
+      emit(TuteError(friendlyError(e)));
     }
   }
 
@@ -58,7 +59,7 @@ class TuteBloc extends Bloc<TuteEvent, TuteState> {
 
     emit(TuteLoaded(response.data));
   } catch (e) {
-    emit(TuteError(e.toString()));
+    emit(TuteError(friendlyError(e)));
   }
 }
 }

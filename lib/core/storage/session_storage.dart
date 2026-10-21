@@ -45,13 +45,13 @@ class SessionStorage {
     return prefs.getString(_emailKey);
   }
 
-  /// Remove only login session
+  /// Remove only login session (the remembered email is kept so the
+  /// sign-in page can fill it in next time).
   static Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
-    await prefs.remove(_emailKey);
   }
 
   /// Remove remembered email manually (optional)

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/model/class_categry/class_category_request_model.dart';
 import '../../../data/model/class_categry/class_category_response_model.dart';
 import '../../../domain/usecase/fetch_class_category_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'class_category_event.dart';
 part 'class_category_state.dart';
@@ -45,7 +46,7 @@ class ClassCategoryBloc
     } catch (e) {
       emit(
         ClassCategoryError(
-          message: e.toString(),
+          message: friendlyError(e),
         ),
       );
     }

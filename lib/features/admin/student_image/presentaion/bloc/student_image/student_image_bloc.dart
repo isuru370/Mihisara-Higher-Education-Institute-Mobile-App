@@ -6,6 +6,7 @@ import '../../../data/model/student_image_update/student_image_response_model.da
 
 import '../../../domain/usecase/fetch_student_image_usecase.dart';
 import '../../../domain/usecase/update_student_image_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'student_image_event.dart';
 part 'student_image_state.dart';
@@ -56,7 +57,7 @@ class StudentImageBloc
 
       emit(
         StudentImageError(
-          message: e.toString(),
+          message: friendlyError(e),
         ),
       );
     }
@@ -103,7 +104,7 @@ class StudentImageBloc
 
       emit(
         StudentImageError(
-          message: e.toString(),
+          message: friendlyError(e),
         ),
       );
     }

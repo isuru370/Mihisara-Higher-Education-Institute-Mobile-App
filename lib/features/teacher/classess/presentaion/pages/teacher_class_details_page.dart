@@ -4,6 +4,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../data/model/teacher_class_category_model.dart';
 import '../../data/model/teacher_class_schedule_model.dart';
 import '../../data/model/teacher_classes_model.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class TeacherClassDetailsPage extends StatelessWidget {
   final TeacherClassModel teacherClass;
@@ -874,7 +875,7 @@ class TeacherClassDetailsPage extends StatelessWidget {
 
   String _formatDate(String date) {
     try {
-      final parsed = DateTime.parse(date);
+      final parsed = AppDateTime.tryParseServer(date)!;
 
       return '${parsed.day.toString().padLeft(2, '0')}/'
           '${parsed.month.toString().padLeft(2, '0')}/'

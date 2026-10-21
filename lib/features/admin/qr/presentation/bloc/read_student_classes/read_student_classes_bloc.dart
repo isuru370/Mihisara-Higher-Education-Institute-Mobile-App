@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/model/read_student_classes/read_student_classes_request_model.dart';
 import '../../../data/model/read_student_classes/read_student_classes_response_model.dart';
 import '../../../domain/usecases/read_student_classes_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'read_student_classes_event.dart';
 part 'read_student_classes_state.dart';
@@ -32,7 +33,7 @@ class ReadStudentClassesBloc
 
       emit(ReadStudentClassesSuccess(response: response));
     } catch (e) {
-      emit(ReadStudentClassesError(message: e.toString()));
+      emit(ReadStudentClassesError(message: friendlyError(e)));
     }
   }
 }

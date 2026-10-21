@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/today_class_item_model.dart';
 import '../../../domain/usecase/get_today_classes_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 
 part 'today_classes_event.dart';
@@ -29,7 +30,7 @@ class TodayClassesBloc
 
       emit(TodayClassesLoaded(response.data));
     } catch (e) {
-      emit(TodayClassesError(e.toString()));
+      emit(TodayClassesError(friendlyError(e)));
     }
   }
 }

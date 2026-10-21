@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../../../../../core/network/api_http.dart' as http;
 import '../../../../../core/constants/api_constants.dart';
 import '../model/daily_attendance_details_request_model.dart';
 import '../model/daily_attendance_details_response_model.dart';

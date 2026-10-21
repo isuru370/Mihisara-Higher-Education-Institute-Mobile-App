@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/storage/session_storage.dart';
+import '../../../../core/storage/session_storage.dart';
 import '../bloc/auth/auth_bloc.dart';
 
 class SigninPage extends StatefulWidget {
@@ -34,7 +34,9 @@ class _SigninPageState extends State<SigninPage> {
   Future<void> _loadSavedEmail() async {
     final email = await SessionStorage.getSavedEmail();
 
-    if (email != null) {
+    if (!mounted) return;
+
+    if (email != null && _emailController.text.isEmpty) {
       _emailController.text = email;
     }
   }
@@ -72,7 +74,8 @@ class _SigninPageState extends State<SigninPage> {
     context.read<AuthBloc>().add(
       LoginRequested(
         email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        // Passwords may contain spaces; send exactly what was typed.
+        password: _passwordController.text,
       ),
     );
   }
@@ -103,8 +106,16 @@ class _SigninPageState extends State<SigninPage> {
                   arguments: {'token': state.token, 'user_model': user},
                 );
               } else {
+                // Don't leave a saved session for a user the app can't open.
+                context.read<AuthBloc>().add(LogoutRequested());
+
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Unknown user role')),
+                  const SnackBar(
+                    content: Text(
+                      'This account has no mobile app access. '
+                      'Contact the system admin.',
+                    ),
+                  ),
                 );
               }
             } else if (state is AuthFailure) {

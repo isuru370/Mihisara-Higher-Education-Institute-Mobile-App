@@ -8,6 +8,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/printer_service.dart';
 import '../../../../auth/data/models/user_model.dart';
 import '../bloc/mobile_dashboard/mobile_dashboard_bloc.dart';
+import '../../../../../core/session/logout_helper.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -82,13 +83,9 @@ class _DashboardPageState extends State<DashboardPage> {
     await _loadSession();
   }
 
-  Future<void> _logout() async {
-    await SessionStorage.clear();
-
-    if (!mounted) return;
-
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-  }
+  // Revokes the token on the server too (before, only the phone was cleared
+  // and it went to '/login', which is not a route).
+  Future<void> _logout() => confirmLogout(context);
 
   String _money(dynamic value) {
     if (value == null) return '-';

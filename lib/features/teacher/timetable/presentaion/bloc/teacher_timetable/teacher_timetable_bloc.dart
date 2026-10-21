@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/model/teacher_timetable_model.dart';
 import '../../../domain/usecase/get_teacher_timetable.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 
 part 'teacher_timetable_event.dart';
@@ -37,10 +38,7 @@ class TeacherTimetableBloc
     } catch (e) {
       emit(
         TeacherTimetableError(
-          message: e.toString().replaceFirst(
-                'Exception: ',
-                '',
-              ),
+          message: friendlyError(e),
         ),
       );
     }

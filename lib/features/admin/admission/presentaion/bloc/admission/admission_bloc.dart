@@ -8,6 +8,7 @@ import '../../../data/model/store/admission_payment_request_model.dart';
 import '../../../domain/usecase/fetch_admission_payment_usecase.dart';
 import '../../../domain/usecase/fetch_admission_usecase.dart';
 import '../../../domain/usecase/store_admission_payment_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'admission_event.dart';
 part 'admission_state.dart';
@@ -38,7 +39,7 @@ class AdmissionBloc extends Bloc<AdmissionEvent, AdmissionState> {
 
       emit(AdmissionLoaded(admissionData: response));
     } catch (e) {
-      emit(AdmissionError(message: e.toString()));
+      emit(AdmissionError(message: friendlyError(e)));
     }
   }
 
@@ -53,7 +54,7 @@ class AdmissionBloc extends Bloc<AdmissionEvent, AdmissionState> {
 
       emit(AdmissionPaymentLoaded(paymentData: response));
     } catch (e) {
-      emit(AdmissionError(message: e.toString()));
+      emit(AdmissionError(message: friendlyError(e)));
     }
   }
 
@@ -68,7 +69,7 @@ class AdmissionBloc extends Bloc<AdmissionEvent, AdmissionState> {
 
       emit(AdmissionPaymentStored(response: response));
     } catch (e) {
-      emit(AdmissionError(message: e.toString()));
+      emit(AdmissionError(message: friendlyError(e)));
     }
   }
 }

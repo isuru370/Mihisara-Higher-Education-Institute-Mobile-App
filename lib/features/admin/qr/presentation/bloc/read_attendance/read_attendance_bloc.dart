@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/model/read_attendance/read_attendance_data_model.dart';
 import '../../../data/model/read_attendance/read_attendance_request_model.dart';
 import '../../../domain/usecases/read_attendance_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'read_attendance_event.dart';
 part 'read_attendance_state.dart';
@@ -38,7 +39,7 @@ class ReadAttendanceBloc
         ),
       );
     } catch (e) {
-      emit(ReadAttendanceError(e.toString()));
+      emit(ReadAttendanceError(friendlyError(e)));
     }
   }
 }

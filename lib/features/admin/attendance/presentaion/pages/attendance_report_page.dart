@@ -9,6 +9,7 @@ import '../../services/pdf_service.dart';
 import '../bloc/attendance/attendance_bloc.dart';
 import '../widgets/attendance_summary_card.dart';
 import '../widgets/student_attendance_card.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class AttendanceReportPage extends StatefulWidget {
   final int scheduleId;
@@ -658,7 +659,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
   String _formatDate(String dateTime) {
     try {
-      final date = DateTime.parse(dateTime);
+      final date = AppDateTime.tryParseServer(dateTime)!;
       return DateFormat('dd MMM yyyy').format(date);
     } catch (e) {
       return dateTime;

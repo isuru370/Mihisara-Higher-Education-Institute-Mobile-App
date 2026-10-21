@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import '../../../../core/network/api_http.dart' as http;
 
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/app_exceptions.dart';
@@ -18,8 +18,8 @@ class AuthRemoteDataSource {
         body: jsonEncode(request.toJson()),
       );
 
+      // Status only: the body contains the login token.
       debugPrint('LOGIN RESPONSE CODE: ${response.statusCode}');
-      debugPrint('LOGIN RESPONSE BODY: ${response.body}');
 
       Map<String, dynamic> data = {};
       try {

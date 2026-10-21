@@ -35,6 +35,36 @@ class AppDateTime {
     }
   }
 
+  /// Parses a date or date-time sent by the API, or returns null.
+  ///
+  /// Laravel sends `date` columns as UTC instants, e.g. a class on
+  /// 21 Oct arrives as "2026-10-20T18:30:00.000000Z". Formatting that
+  /// directly shows 20 Oct, so UTC values are converted to Sri Lanka time.
+  /// Values without a zone ("2026-10-21", "2026-10-21 16:30:00") are kept.
+  static DateTime? tryParseServer(String? value) {
+    if (value == null) return null;
+
+    final text = value.trim();
+    if (text.isEmpty) return null;
+
+    final parsed = DateTime.tryParse(text.replaceFirst(' ', 'T'));
+    if (parsed == null) return null;
+
+    return parsed.isUtc ? toLocal(parsed) : parsed;
+  }
+
+  /// Formats an API date with [pattern]; returns [fallback] (or the raw
+  /// value) when it can't be parsed.
+  static String formatServer(
+    String? value,
+    String pattern, {
+    String? fallback,
+  }) {
+    final date = tryParseServer(value);
+    if (date == null) return fallback ?? (value ?? '');
+    return DateFormat(pattern).format(date);
+  }
+
   /// Format date for API (YYYY-MM-DD)
   static String formatForApi(DateTime date) {
     return DateFormat('yyyy-MM-dd').format(date);

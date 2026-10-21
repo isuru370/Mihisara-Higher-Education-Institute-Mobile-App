@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -48,7 +49,17 @@ Future<void> main() async {
   tz.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Colombo'));
 
-  Bloc.observer = SimpleBlocObserver();
+  // Release builds must not write API bodies, tokens or passwords to the
+  // device log (adb logcat can read it). debugPrint is used for that all
+  // over the app, so silence it here once.
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
+
+  // The observer logs every bloc event/state, including login details.
+  if (kDebugMode) {
+    Bloc.observer = SimpleBlocObserver();
+  }
 
   await di.init();
 

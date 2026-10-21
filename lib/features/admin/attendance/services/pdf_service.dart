@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../data/models/attendance_report/attendance_report_response_model.dart';
 import '../data/models/attendance_report/student_data.dart';
+import '../../../../core/utils/app_datetime.dart';
 
 class PdfService {
   static Future<void> generateAndSharePdf(
@@ -132,7 +133,10 @@ class PdfService {
           pw.SizedBox(height: 8),
           pw.Row(
             children: [
-              _buildInfoItem('Date', schedule.classDate.split('T')[0]),
+              _buildInfoItem(
+                'Date',
+                AppDateTime.formatServer(schedule.classDate, 'yyyy-MM-dd'),
+              ),
               _buildInfoItem(
                 'Time',
                 '${schedule.startTime} - ${schedule.endTime}',
@@ -798,7 +802,7 @@ class PdfService {
 
     try {
       // Try to parse the date
-      final date = DateTime.parse(paymentMonth);
+      final date = AppDateTime.tryParseServer(paymentMonth)!;
       // Format as YYYY-MM
       return '${date.year}-${date.month.toString().padLeft(2, '0')}';
     } catch (e) {
@@ -820,7 +824,7 @@ class PdfService {
 
   static String _formatTimeForPdf(String dateTime) {
     try {
-      final date = DateTime.parse(dateTime);
+      final date = AppDateTime.tryParseServer(dateTime)!;
       final hour = date.hour;
       final minute = date.minute.toString().padLeft(2, '0');
       final period = hour >= 12 ? 'PM' : 'AM';

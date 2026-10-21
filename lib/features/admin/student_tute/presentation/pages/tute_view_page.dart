@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../data/model/fetch_tute/fetch_tute_request_model.dart';
 import '../../data/model/fetch_tute/student_tute_model.dart';
 import '../bloc/tute/tute_bloc.dart';
+import '../../../../../core/utils/app_datetime.dart';
 
 class TuteViewPage extends StatefulWidget {
   final int studentId;
@@ -247,21 +247,25 @@ class _TuteViewPageState extends State<TuteViewPage> {
   // =========================
 
   Widget _buildTuteCard(StudentTuteModel tute) {
-    final issuedMonthText = tute.issuedMonth != null
-        ? DateFormat('MMMM yyyy').format(DateTime.parse(tute.issuedMonth!))
-        : 'Not Selected';
+    // formatServer converts UTC to local time and never throws on a bad
+    // value (DateTime.parse here crashed the whole list).
+    final issuedMonthText = AppDateTime.formatServer(
+      tute.issuedMonth,
+      'MMMM yyyy',
+      fallback: 'Not Selected',
+    );
 
-    final issuedAtText = tute.issuedAt != null
-        ? DateFormat(
-            'yyyy-MM-dd hh:mm a',
-          ).format(DateTime.parse(tute.issuedAt!))
-        : '-';
+    final issuedAtText = AppDateTime.formatServer(
+      tute.issuedAt,
+      'yyyy-MM-dd hh:mm a',
+      fallback: '-',
+    );
 
-    final createdAtText = tute.createdAt != null
-        ? DateFormat(
-            'yyyy-MM-dd hh:mm a',
-          ).format(DateTime.parse(tute.createdAt!))
-        : '-';
+    final createdAtText = AppDateTime.formatServer(
+      tute.createdAt,
+      'yyyy-MM-dd hh:mm a',
+      fallback: '-',
+    );
 
     final statusColor = tute.isIssued ? Colors.green : Colors.orange;
 

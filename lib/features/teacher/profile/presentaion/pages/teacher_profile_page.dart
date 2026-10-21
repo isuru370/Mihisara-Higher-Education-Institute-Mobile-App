@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/session/logout_helper.dart';
 
 class TeacherProfilePage extends StatelessWidget {
   const TeacherProfilePage({super.key});
@@ -112,7 +113,7 @@ class TeacherProfilePage extends StatelessWidget {
                 ],
               ),
 
-              _buildActionButtons(),
+              _buildActionButtons(context),
             ],
           ),
         ),
@@ -515,7 +516,7 @@ class TeacherProfilePage extends StatelessWidget {
   // ACTION BUTTONS
   // ============================================================
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppColors.paddingLarge,
@@ -554,9 +555,7 @@ class TeacherProfilePage extends StatelessWidget {
             width: double.infinity,
             height: 50,
             child: OutlinedButton.icon(
-              onPressed: () {
-                // TODO: Logout
-              },
+              onPressed: () => confirmLogout(context),
               icon: const Icon(Icons.logout_rounded, size: 19),
               label: const Text(
                 'Logout',

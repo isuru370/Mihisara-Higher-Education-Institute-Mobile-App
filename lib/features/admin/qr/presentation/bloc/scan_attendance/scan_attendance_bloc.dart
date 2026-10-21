@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../data/datasources/scan_attendance_exception.dart';
 import '../../../data/model/scan_attendance_new/scan_attendance_request_model.dart';
 import '../../../data/model/scan_attendance_new/scan_attendance_response_model.dart';
 import '../../../domain/usecases/scan_attendance_usecase.dart';
+import '../../../../../../core/errors/error_message.dart';
 
 part 'scan_attendance_event.dart';
 part 'scan_attendance_state.dart';
@@ -46,10 +48,17 @@ class ScanAttendanceBloc
           response: response,
         ),
       );
+    } on ScanAttendanceException catch (e) {
+      emit(
+        ScanAttendanceFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+        ),
+      );
     } catch (e) {
       emit(
         ScanAttendanceFailure(
-          message: e.toString(),
+          message: friendlyError(e),
         ),
       );
     }
