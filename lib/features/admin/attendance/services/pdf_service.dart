@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../data/models/attendance_report/attendance_report_response_model.dart';
 import '../data/models/attendance_report/student_data.dart';
 import '../../../../core/utils/app_datetime.dart';
+import '../../../../core/constants/app_config.dart';
 
 class PdfService {
   static Future<void> generateAndSharePdf(
@@ -765,7 +766,7 @@ class PdfService {
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
               pw.Text(
-                'Nexorait Education System',
+                AppConfig.instituteName,
                 style: pw.TextStyle(
                   fontSize: 10,
                   fontWeight: pw.FontWeight.bold,

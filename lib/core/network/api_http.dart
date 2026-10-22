@@ -28,10 +28,58 @@ const String timeoutMessage =
     'The server took too long to answer. Check the connection and try again.';
 
 Future<base.Response> _withTimeout(Future<base.Response> request, Uri url) {
-  return request.timeout(
-    requestTimeout,
-    onTimeout: () => throw base.ClientException(timeoutMessage, url),
-  );
+  return request
+      .timeout(
+        requestTimeout,
+        onTimeout: () => throw base.ClientException(timeoutMessage, url),
+      )
+      .then(_withFieldErrorMessage);
+}
+
+/// Laravel answers validation errors with
+///   422 {"message": "The given data was invalid.", "errors": {field: [..]}}
+/// Every screen shows "message", which says nothing about what is wrong.
+/// Put the first field error into "message" instead (the rest is kept).
+base.Response _withFieldErrorMessage(base.Response response) {
+  if (response.statusCode != 422) return response;
+
+  try {
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) return response;
+
+    final errors = decoded['errors'];
+    if (errors is! Map || errors.isEmpty) return response;
+
+    String? first;
+    for (final value in errors.values) {
+      if (value is List && value.isNotEmpty) {
+        first = value.first.toString();
+        break;
+      }
+      if (value is String && value.isNotEmpty) {
+        first = value;
+        break;
+      }
+    }
+
+    if (first == null) return response;
+
+    decoded['message'] = first;
+
+    // UTF-8 bytes + explicit charset so Sinhala/Tamil text is kept.
+    return base.Response.bytes(
+      utf8.encode(jsonEncode(decoded)),
+      response.statusCode,
+      headers: {
+        ...response.headers,
+        'content-type': 'application/json; charset=utf-8',
+      },
+      request: response.request,
+      reasonPhrase: response.reasonPhrase,
+    );
+  } catch (_) {
+    return response;
+  }
 }
 
 Future<base.Response> get(Uri url, {Map<String, String>? headers}) =>

@@ -9,6 +9,7 @@ import '../../data/models/today_payments/today_payments_request_model.dart';
 import '../bloc/mark_payment/mark_payment_bloc.dart';
 import 'utils/payment_receipt_print.dart';
 import '../../../../../core/utils/app_datetime.dart';
+import '../../../../../core/constants/app_config.dart';
 
 class TodayPaymentPage extends StatefulWidget {
   const TodayPaymentPage({super.key});
@@ -152,7 +153,9 @@ class _TodayPaymentPageState extends State<TodayPaymentPage> {
         teacherName: item.teacher.name,
         categoryName: item.category.name,
         feeOptionName: item.feeOption.name,
-        classFee: item.feeOption.fee,
+        // /payments/today has no fee option, so feeOption.fee is 0;
+        // print the amount that was actually paid.
+        classFee: item.feeOption.fee > 0 ? item.feeOption.fee : item.amount,
         receiptNumber: item.receiptNumber,
       );
 
@@ -162,7 +165,7 @@ class _TodayPaymentPageState extends State<TodayPaymentPage> {
 
       await PaymentReceiptPrint.printReceipt(
         printerService: _printerService,
-        instituteName: 'EDU NEXORA',
+        instituteName: AppConfig.instituteName,
         studentName: item.student.initialName,
         studentId: item.student.qrCode,
         paymentMonth: item.paymentMonth,
@@ -1041,11 +1044,12 @@ class _TodayPaymentPageState extends State<TodayPaymentPage> {
                         if (item.teacher.customId.isNotEmpty)
                           _infoRow('Teacher ID', item.teacher.customId),
 
-                        _infoRow('Fee Option', item.feeOption.name),
+                        if (item.feeOption.name.isNotEmpty)
+                          _infoRow('Fee Option', item.feeOption.name),
 
                         _infoRow(
                           'Fee',
-                          'LKR ${item.feeOption.fee.toStringAsFixed(2)}',
+                          'LKR ${(item.feeOption.fee > 0 ? item.feeOption.fee : item.amount).toStringAsFixed(2)}',
                         ),
 
                         _infoRow(

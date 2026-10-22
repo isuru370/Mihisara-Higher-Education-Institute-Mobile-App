@@ -9,6 +9,7 @@ import '../../data/models/students_model.dart';
 import '../bloc/students/students_bloc.dart';
 import '../widgets/admission_dialog.dart';
 import '../widgets/admission_receipt_print.dart';
+import '../../../../../core/constants/app_config.dart';
 
 class CreateStudentPage extends StatefulWidget {
   const CreateStudentPage({super.key});
@@ -186,7 +187,7 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
                           await AdmissionReceiptPrint.printReceipt(
                             printerService: _printerService,
 
-                            instituteName: 'Minipalasa Education Center',
+                            instituteName: AppConfig.instituteName,
 
                             receiptNumber: payment.receiptNumber,
 
@@ -348,13 +349,16 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
                             controller: _quickImageIdController,
                             label: 'QuickImage Id',
                             icon: Icons.image_rounded,
-                            requiredField: false,
+                            // The server requires a photo for temporary-QR
+                            // registration (it answered 422 without one).
+                            requiredField: true,
                             customValidator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return null;
+                                return 'Quick image is required';
                               }
 
-                              final regex = RegExp(r'^QP-\d{3}$');
+                              // QP-001 ... QP-999, then QP-1000 and up.
+                              final regex = RegExp(r'^QP-\d{3,}$');
                               if (!regex.hasMatch(value.trim())) {
                                 return 'Use format like QP-001';
                               }

@@ -77,11 +77,31 @@ class StudentClassModel {
           ) ??
           0,
 
+      // The API sends the option flat (fee_option_label / fee_option_fee)
+      // rather than a fee_option object, so the label never showed.
       feeOption: json['fee_option'] is Map<String, dynamic>
           ? FeeOptionModel.fromJson(
               json['fee_option'] as Map<String, dynamic>,
             )
-          : null,
+          : (json['fee_option_label'] != null
+              ? FeeOptionModel(
+                  id: int.tryParse(
+                        json['class_category_fee_option_id']?.toString() ?? '',
+                      ) ??
+                      0,
+                  classCategoryFeeId: int.tryParse(
+                        json['class_category_fee_id']?.toString() ?? '',
+                      ) ??
+                      0,
+                  label: json['fee_option_label'].toString(),
+                  fee: double.tryParse(
+                        json['fee_option_fee']?.toString() ?? '',
+                      ) ??
+                      0,
+                  isDefault: false,
+                  isActive: true,
+                )
+              : null),
 
       isActive:
           json['is_active'] == true,

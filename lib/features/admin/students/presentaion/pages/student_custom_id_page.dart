@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../bloc/students/students_bloc.dart';
+import '../../../../../core/constants/app_config.dart';
 
 class StudentCustomIdPage extends StatefulWidget {
   final String token;
@@ -239,7 +240,7 @@ class _StudentsPageState extends State<StudentCustomIdPage> {
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Text(
-                  'EDU NEXORA',
+                  AppConfig.instituteName,
                   style: pw.TextStyle(
                     fontSize: 24,
                     fontWeight: pw.FontWeight.bold,

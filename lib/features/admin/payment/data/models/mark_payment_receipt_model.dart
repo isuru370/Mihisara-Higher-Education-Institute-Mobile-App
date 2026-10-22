@@ -16,10 +16,21 @@ class MarkPaymentReceiptModel {
     required this.paymentCount,
   });
 
+  /// Reads the receipt sent by /new-payment/bulk-pay:
+  ///   { student: {custom_id, initial_name, full_name}, payment_method,
+  ///     rows: [{class_name, category, grade, teacher, receipt_number,
+  ///             class_fee, ...}], summary: {total_class_fee} }
+  /// The old keys (student_details, classes, total, payment_count) are
+  /// still accepted. Before this, rows were never read, so classes was
+  /// always empty and the receipt was never printed.
   factory MarkPaymentReceiptModel.fromJson(Map<String, dynamic> json) {
-    final studentJson = json['student_details'];
+    final studentJson = json['student_details'] ?? json['student'];
 
-    final classesJson = json['classes'];
+    final classesJson = json['classes'] ?? json['rows'];
+
+    final summary = json['summary'] is Map<String, dynamic>
+        ? json['summary'] as Map<String, dynamic>
+        : const <String, dynamic>{};
 
     final List<MarkPaymentReceiptItemModel> classes = [];
 
@@ -38,11 +49,15 @@ class MarkPaymentReceiptModel {
 
       classes: classes,
 
-      total: double.tryParse(json['total']?.toString() ?? '0') ?? 0.0,
+      total: double.tryParse(
+            (json['total'] ?? summary['total_class_fee'])?.toString() ?? '',
+          ) ??
+          classes.fold<double>(0, (sum, item) => sum + item.classFee),
 
       paymentMethod: json['payment_method']?.toString() ?? '',
 
-      paymentCount: int.tryParse(json['payment_count']?.toString() ?? '0') ?? 0,
+      paymentCount: int.tryParse(json['payment_count']?.toString() ?? '') ??
+          classes.length,
     );
   }
 

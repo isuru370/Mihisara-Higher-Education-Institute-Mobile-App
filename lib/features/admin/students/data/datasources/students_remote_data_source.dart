@@ -42,9 +42,9 @@ class StudentRemoteDataSource {
   Future<List<StudentModel>> searchStudent(String studentCustomId) async {
     try {
       final token = await SessionStorage.getToken();
-      final uri = Uri.parse(
-        '${ApiConstants.apiUrl}/students/search/$studentCustomId',
-      );
+      // The API is GET /students/search?search=... (no path parameter).
+      final uri = Uri.parse('${ApiConstants.apiUrl}/students/search')
+          .replace(queryParameters: {'search': studentCustomId});
       final response = await http.get(
         uri,
         headers: ApiConstants.headers(token: token),

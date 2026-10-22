@@ -28,13 +28,13 @@ class MarkPaymentReceiptItemModel {
           json['grade']?.toString() ?? '',
 
       teacherName:
-          json['teacher_name']?.toString() ?? '',
+          (json['teacher_name'] ?? json['teacher'])?.toString() ?? '',
 
       categoryName:
-          json['category_name']?.toString() ?? '',
+          (json['category_name'] ?? json['category'])?.toString() ?? '',
 
       feeOptionName:
-          json['fee_option_name']?.toString() ?? '',
+          (json['fee_option_name'] ?? json['fee_option'])?.toString() ?? '',
 
       classFee: double.tryParse(
             json['class_fee']?.toString() ?? '0',
@@ -42,7 +42,7 @@ class MarkPaymentReceiptItemModel {
           0.0,
 
       receiptNumber:
-          json['receipt_no']?.toString() ?? '',
+          (json['receipt_no'] ?? json['receipt_number'])?.toString() ?? '',
     );
   }
 }
