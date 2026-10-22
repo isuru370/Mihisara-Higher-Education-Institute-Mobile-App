@@ -365,7 +365,8 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
                                       return null;
                                     }
 
-                                    final regex = RegExp(r'^QP-\d{3}$');
+                                    // QP-001 ... QP-999, then QP-1000 and up.
+                                    final regex = RegExp(r'^QP-\d{3,}$');
                                     if (!regex.hasMatch(value.trim())) {
                                       return 'Use format like QP-001';
                                     }

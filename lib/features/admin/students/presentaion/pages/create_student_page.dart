@@ -349,13 +349,16 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
                             controller: _quickImageIdController,
                             label: 'QuickImage Id',
                             icon: Icons.image_rounded,
-                            requiredField: false,
+                            // The server requires a photo for temporary-QR
+                            // registration (it answered 422 without one).
+                            requiredField: true,
                             customValidator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return null;
+                                return 'Quick image is required';
                               }
 
-                              final regex = RegExp(r'^QP-\d{3}$');
+                              // QP-001 ... QP-999, then QP-1000 and up.
+                              final regex = RegExp(r'^QP-\d{3,}$');
                               if (!regex.hasMatch(value.trim())) {
                                 return 'Use format like QP-001';
                               }
