@@ -199,11 +199,11 @@ class _TodayPaymentPageState extends State<TodayPaymentPage> {
         ),
       );
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _reprintingId = '';
-      });
+      if (mounted) {
+        setState(() {
+          _reprintingId = '';
+        });
+      }
     }
   }
 
