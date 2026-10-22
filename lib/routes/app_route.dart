@@ -29,6 +29,7 @@ import '../features/admin/qr/data/model/scan_attendance_new/scan_attendance_resp
 import '../features/admin/qr/presentation/pages/attendance_qr_scanner_page.dart';
 import '../features/admin/qr/presentation/pages/qr_scanner_page.dart';
 import '../features/admin/qr/presentation/pages/scan_payment_page.dart';
+import '../features/admin/qr/data/model/scan_payment_new/scan_payment_response_model.dart';
 import '../features/admin/student_card/data/model/assignment/assignment_search_student_response_model.dart';
 import '../features/admin/student_card/presentaion/page/re_assign_card_page.dart';
 import '../features/admin/student_card/presentaion/page/register_details_page.dart';
@@ -241,11 +242,31 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => ScanPaymentPage());
 
       case '/payment-details':
-        final args = settings.arguments as Map<String, dynamic>; // cast as Map
+        final args = settings.arguments is Map
+            ? Map<String, dynamic>.from(settings.arguments as Map)
+            : const <String, dynamic>{};
+        final paymentResponse = args['paymentState'];
+
+        // PaymentPage only works with the new payment API response.
+        if (paymentResponse is! ScanPaymentResponseModel) {
+          return MaterialPageRoute(
+            builder: (_) => const Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Could not open payment details. Please scan the student again.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
 
         return MaterialPageRoute(
           builder: (_) => PaymentPage(
-            paymentResponse: args['paymentState'], // pass the loaded state
+            paymentResponse: paymentResponse,
             markMethod: args['mark_method'] as String?,
           ),
         );

@@ -8,8 +8,9 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../data/model/scan_attendance_new/attendance_data_model.dart';
 import '../../data/model/scan_attendance_new/class_selection_model.dart';
 import '../../data/model/scan_attendance_new/scan_attendance_response_model.dart';
-import '../bloc/read_payment/read_payment_bloc.dart';
+import '../../data/model/scan_payment_new/scan_payment_request_model.dart';
 import '../bloc/scan_attendance/scan_attendance_bloc.dart';
+import '../bloc/scan_payment/scan_payment_bloc.dart';
 
 class AttendanceQrScannerPage extends StatefulWidget {
   const AttendanceQrScannerPage({super.key});
@@ -46,6 +47,10 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
   bool _isMarkingAttendance = false;
   bool _attendanceSuccess = false;
   bool _isPaymentProcessing = false;
+
+  /// True only while this page is waiting for its own payment lookup, so a
+  /// lookup started from another screen does not open a page from here.
+  bool _waitingForPayment = false;
   bool _isBottomSheetVisible = false;
 
   //---------------------------------------
@@ -266,9 +271,20 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
     final studentCode = _scanResponse?.data?.student.studentCode;
     if (studentCode == null) return;
 
-    setState(() => _isPaymentProcessing = true);
+    if (_isPaymentProcessing) return;
 
-    context.read<ReadPaymentBloc>().add(ReadPaymentRequested(studentCode));
+    setState(() {
+      _isPaymentProcessing = true;
+      _waitingForPayment = true;
+    });
+
+    // PaymentPage needs the new payment API response (ScanPaymentResponseModel),
+    // the same one the Scan Payment screen uses.
+    context.read<ScanPaymentBloc>().add(
+          ScanPaymentRequested(
+            requestModel: ScanPaymentRequestModel(code: studentCode),
+          ),
+        );
   }
 
   /// Colour of the bottom sheet border while a marked student is shown:
@@ -444,19 +460,20 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
         //----------------------------------
         // Read Payment Listener
         //----------------------------------
-        BlocListener<ReadPaymentBloc, ReadPaymentState>(
+        BlocListener<ScanPaymentBloc, ScanPaymentState>(
+          listenWhen: (previous, current) =>
+              _waitingForPayment &&
+              (current is ScanPaymentLoaded || current is ScanPaymentError),
           listener: (context, state) {
-            if (state is ReadPaymentLoading) {
-              setState(() => _isPaymentProcessing = true);
-            }
+            _waitingForPayment = false;
 
-            if (state is ReadPaymentLoaded) {
+            if (state is ScanPaymentLoaded) {
               setState(() => _isPaymentProcessing = false);
               Navigator.pushNamed(
                 context,
                 '/payment-details',
                 arguments: {
-                  'paymentState': state, // 'paymentState' use කරන්න
+                  'paymentState': state.response,
                   'mark_method': 'qr_mobile',
                 },
               ).then((_) {
@@ -467,7 +484,7 @@ class _AttendanceQrScannerPageState extends State<AttendanceQrScannerPage>
               });
             }
 
-            if (state is ReadPaymentError) {
+            if (state is ScanPaymentError) {
               // Attendance is already marked here, so don't replace the
               // student panel with the "not marked" error panel.
               setState(() => _isPaymentProcessing = false);
