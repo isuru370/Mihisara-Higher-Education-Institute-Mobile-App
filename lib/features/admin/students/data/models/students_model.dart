@@ -36,7 +36,11 @@ class StudentModel {
   final int gradeId;
   final String? classType;
 
+  /// Admission id when creating a student (sent as admission_id).
   final int? admission;
+
+  /// From the API: true when the admission fee is paid.
+  final bool? hasAdmission;
 
   final String? studentSchool;
   final String? imgUrl;
@@ -78,6 +82,7 @@ class StudentModel {
     required this.gradeId,
     this.classType,
     this.admission,
+    this.hasAdmission,
     this.studentSchool,
     this.imgUrl,
     this.lastImageUpdateAt,
@@ -118,7 +123,9 @@ class StudentModel {
       guardianMobile: _string(json['guardian_mobile']) ?? '',
       gradeId: _int(json['grade_id']) ?? 0,
       classType: _string(json['class_type']),
-      admission: _int(json['admission']),
+      // The API sends admission as a boolean (paid or not).
+      admission: json['admission'] is bool ? null : _int(json['admission']),
+      hasAdmission: _bool(json['admission']),
       studentSchool: _string(json['student_school']),
       imgUrl: rawPath == null || rawPath.isEmpty
           ? null
