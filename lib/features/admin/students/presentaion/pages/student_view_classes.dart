@@ -277,7 +277,9 @@ class StudentViewClasses extends StatelessWidget {
                                         Expanded(
                                           child: _paymentCard(
                                             title:
-                                                'Class Fee ( ${item.feeOption?.label})',
+                                                item.feeOption == null
+                                                    ? 'Class Fee'
+                                                    : 'Class Fee (${item.feeOption!.label})',
                                             value:
                                                 'LKR ${item.finalFee.toStringAsFixed(2)}',
 
