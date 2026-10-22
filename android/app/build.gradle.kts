@@ -18,7 +18,7 @@ if (hasReleaseKeystore) {
 }
 
 android {
-    namespace = "com.nexorait.mihisara_app"
+    namespace = "com.nexorait.mihisara_education_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
