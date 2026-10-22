@@ -9,6 +9,7 @@ import '../../data/models/students_model.dart';
 import '../bloc/students/students_bloc.dart';
 import '../widgets/admission_dialog.dart';
 import '../widgets/admission_receipt_print.dart';
+import '../../../../../core/constants/app_config.dart';
 
 class CreateStudentPage extends StatefulWidget {
   const CreateStudentPage({super.key});
@@ -186,7 +187,7 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
                           await AdmissionReceiptPrint.printReceipt(
                             printerService: _printerService,
 
-                            instituteName: 'Minipalasa Education Center',
+                            instituteName: AppConfig.instituteName,
 
                             receiptNumber: payment.receiptNumber,
 

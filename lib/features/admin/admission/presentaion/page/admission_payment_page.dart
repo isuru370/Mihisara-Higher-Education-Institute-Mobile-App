@@ -10,6 +10,7 @@ import '../../../students/presentaion/widgets/admission_receipt_print.dart';
 import '../../data/model/payment/admission_payment_model.dart';
 import '../../data/model/payment/admission_unpaid_student_model.dart';
 import '../../data/model/store/admission_payment_request_model.dart';
+import '../../../../../core/constants/app_config.dart';
 
 class AdmissionPaymentPage extends StatefulWidget {
   const AdmissionPaymentPage({super.key});
@@ -70,7 +71,7 @@ class _AdmissionPaymentPageState extends State<AdmissionPaymentPage> {
       if (_printerService.isConnected) {
         await AdmissionReceiptPrint.printReceipt(
           printerService: _printerService,
-          instituteName: 'Minipalasa Education Center',
+          instituteName: AppConfig.instituteName,
           receiptNumber: payment.receiptNumber,
           studentName: payment.studentName,
           studentId: payment.studentCode,
@@ -220,7 +221,7 @@ class _AdmissionPaymentPageState extends State<AdmissionPaymentPage> {
             if (_printerService.isConnected) {
               await AdmissionReceiptPrint.printReceipt(
                 printerService: _printerService,
-                instituteName: 'Minipalasa Education Center',
+                instituteName: AppConfig.instituteName,
                 receiptNumber: payment.receiptNumber,
                 studentName: state.response.student.initialName,
                 studentId: state.response.student.customId.toString(),

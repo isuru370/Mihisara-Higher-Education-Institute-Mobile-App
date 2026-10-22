@@ -10,6 +10,7 @@ import '../../data/models/students_model.dart';
 import '../bloc/students/students_bloc.dart';
 import '../widgets/admission_dialog.dart';
 import '../widgets/admission_receipt_print.dart';
+import '../../../../../core/constants/app_config.dart';
 
 class CreateNewStudentPage extends StatefulWidget {
   final String qrCode;
@@ -203,7 +204,7 @@ class _CreateNewStudentPageState extends State<CreateNewStudentPage> {
                           try {
                             await AdmissionReceiptPrint.printReceipt(
                               printerService: _printerService,
-                              instituteName: 'Mihisara Education Institute',
+                              instituteName: AppConfig.instituteName,
                               receiptNumber: payment.receiptNumber,
                               studentName: state.response.student.initialName,
                               studentId: state.response.student.customId
