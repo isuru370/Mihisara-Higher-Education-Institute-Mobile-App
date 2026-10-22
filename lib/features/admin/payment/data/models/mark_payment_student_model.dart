@@ -19,7 +19,7 @@ class MarkPaymentStudentModel {
           0,
 
       name:
-          json['name']?.toString() ?? '',
+          (json['name'] ?? json['initial_name'] ?? json['full_name'])?.toString() ?? '',
 
       customId:
           json['custom_id']?.toString() ?? '',
