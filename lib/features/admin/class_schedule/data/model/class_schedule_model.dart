@@ -4,10 +4,13 @@ import 'schedule/student_class_model.dart';
 
 class ClassScheduleModel {
   final int id;
-  final int classSchedulePatternId;
+  /// Null for a day added with "Add New Day" (no weekly pattern).
+  final int? classSchedulePatternId;
   final int studentClassId;
   final int classCategoryFeeId;
-  final int classHallId;
+
+  /// Null when no hall is set.
+  final int? classHallId;
 
   final String classDate;
   final String startTime;
@@ -47,34 +50,41 @@ class ClassScheduleModel {
     Map<String, dynamic> json,
   ) {
     return ClassScheduleModel(
-      id: json['id'],
-      classSchedulePatternId:
-          json['class_schedule_pattern_id'],
-      studentClassId:
-          json['student_class_id'],
-      classCategoryFeeId:
-          json['class_category_fee_id'],
-      classHallId:
-          json['class_hall_id'],
+      // Null-safe: a schedule without a pattern or hall made this throw
+      // "Null is not a subtype of int" and the schedule list failed.
+      id: _toInt(json['id']) ?? 0,
+      classSchedulePatternId: _toInt(json['class_schedule_pattern_id']),
+      studentClassId: _toInt(json['student_class_id']) ?? 0,
+      classCategoryFeeId: _toInt(json['class_category_fee_id']) ?? 0,
+      classHallId: _toInt(json['class_hall_id']),
       classDate: json['class_date'] ?? '',
       startTime: json['start_time'] ?? '',
       endTime: json['end_time'] ?? '',
       dayOfWeek: json['day_of_week'] ?? '',
       status: json['status'] ?? '',
-      isActive: json['is_active'] ?? false,
-      cancelReason: json['cancel_reason'],
-      note: json['note'],
+      isActive: json['is_active'] == true || json['is_active'] == 1,
+      cancelReason: json['cancel_reason']?.toString(),
+      note: json['note']?.toString(),
       hall: HallModel.fromJson(
-        json['hall'] ?? {},
+        json['hall'] is Map<String, dynamic> ? json['hall'] : {},
       ),
       classCategoryFee:
           ClassCategoryFeeModel.fromJson(
-        json['class_category_fee'] ?? {},
+        json['class_category_fee'] is Map<String, dynamic>
+            ? json['class_category_fee']
+            : {},
       ),
       studentClass:
           StudentClassModel.fromJson(
-        json['student_class'] ?? {},
+        json['student_class'] is Map<String, dynamic>
+            ? json['student_class']
+            : {},
       ),
     );
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '');
   }
 }
