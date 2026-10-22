@@ -8,11 +8,12 @@ import '../../../../../core/enums/scan_type.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../route_observer.dart';
 import '../../../students/presentaion/pages/single_student_view_page.dart';
-import '../bloc/read_payment/read_payment_bloc.dart';
 import '../bloc/read_student/read_student_bloc.dart';
 import '../bloc/read_student_classes/read_student_classes_bloc.dart';
 import '../bloc/read_tute/read_tute_bloc.dart';
 import '../bloc/scan_attendance/scan_attendance_bloc.dart';
+import '../bloc/scan_payment/scan_payment_bloc.dart';
+import '../../data/model/scan_payment_new/scan_payment_request_model.dart';
 
 class QrScannerPage extends StatefulWidget {
   final ScanType scanType;
@@ -35,6 +36,7 @@ class _QrScannerPageState extends State<QrScannerPage> with RouteAware {
   bool _hasPermission = false;
   bool _isScanned = false;
   bool _isHandlingResult = false;
+  bool _waitingForPayment = false;
   String _pendingMarkMethod = 'qr_mobile';
 
   final MobileScannerController _scannerController = MobileScannerController(
@@ -151,7 +153,12 @@ class _QrScannerPageState extends State<QrScannerPage> with RouteAware {
         break;
 
       case ScanType.payment:
-        context.read<ReadPaymentBloc>().add(ReadPaymentRequested(trimmedValue));
+        _waitingForPayment = true;
+        context.read<ScanPaymentBloc>().add(
+              ScanPaymentRequested(
+                requestModel: ScanPaymentRequestModel(code: trimmedValue),
+              ),
+            );
         break;
 
       case ScanType.student:
@@ -256,19 +263,14 @@ class _QrScannerPageState extends State<QrScannerPage> with RouteAware {
             }
           },
         ),
-        BlocListener<ReadPaymentBloc, ReadPaymentState>(
+        BlocListener<ScanPaymentBloc, ScanPaymentState>(
           listenWhen: (previous, current) =>
-              current is ReadPaymentLoaded || current is ReadPaymentError,
+              _waitingForPayment &&
+              (current is ScanPaymentLoaded || current is ScanPaymentError),
           listener: (context, state) async {
-            if (state is ReadPaymentLoaded) {
-              final response = state.response;
+            _waitingForPayment = false;
 
-              if (response.data == null) {
-                _showSnackBar('No payment records found.');
-                _resetScanner();
-                return;
-              }
-
+            if (state is ScanPaymentLoaded) {
               await _safeStopScanner();
               if (!mounted) return;
 
@@ -276,13 +278,13 @@ class _QrScannerPageState extends State<QrScannerPage> with RouteAware {
                 context,
                 '/payment-details',
                 arguments: {
-                  'paymentState': state,
+                  'paymentState': state.response,
                   'mark_method': _pendingMarkMethod,
                 },
               );
             }
 
-            if (state is ReadPaymentError) {
+            if (state is ScanPaymentError) {
               _showSnackBar(state.message);
               _resetScanner();
             }
