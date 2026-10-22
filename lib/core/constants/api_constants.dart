@@ -5,7 +5,7 @@ class ApiConstants {
   static const String productionBaseUrl = 'https://mihisaraeducation.nexorait.lk';
 
   /// Local development server, used by debug builds (`flutter run`).
-  static const String developmentBaseUrl = 'http://192.168.141.230:8000';
+  static const String developmentBaseUrl = 'http://10.249.6.230:8000';
 
   /// Release builds talk to production, debug builds to the local server.
   /// Override either with:
